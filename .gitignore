@@ -1,0 +1,12 @@
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python:
+
+
+# Data
+./static/*.csv
+./log/*
+.git
