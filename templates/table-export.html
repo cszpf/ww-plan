@@ -16,11 +16,9 @@
 		if(start_date.value>end_date.value){
 			message = '截至日期应该大于起始日期';
 		}
-		if(id != 'mdls'){
-			message = "目前只支持导出门店流水表";
-		}
 		if (message != ''){
 			window.alert(message);
+			return false;
 		}
     }
 </script>
