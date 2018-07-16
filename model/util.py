@@ -1,3 +1,4 @@
+#encoding=utf-8
 import MySQLdb
 import datetime
 import os
@@ -148,7 +149,7 @@ class Export:
                 for i in range((end_date-start_date).days):
                     x = start_date + datetime.timedelta(i)
                     try:
-                        _zb = data1.get(x,0)/float(_sub[-1])
+                        _zb = round(float(data1.get(x,0))/float(_sub[-1]),3)
                     except:
                         _zb = 0
                     finally:
