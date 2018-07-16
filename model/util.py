@@ -13,7 +13,7 @@ class Connect:
         self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.30', 'root', 'Wangwang@scut123', 3306
     
     # 数据库连接
-    def connect(self, db_name, _id='2'):
+    def connect(self, db_name, _id='1'):
         # _id:'1'表示大学城数据库,'2'表示汪汪数据库
         db = eval("""MySQLdb.connect(self.ip{id}, self.user{id}, self.pwd{id}, 
         db_name, port=self.port{id}, charset='utf8')""".format(id=_id))
@@ -151,7 +151,7 @@ class Export:
 
 def main():
     export = Export()
-    export.mdls('2018-6-1','2018-6-3','./')
+    export.mdlszb('2018-6-1','2018-6-3','./')
 
 if __name__ == '__main__':
     main()
