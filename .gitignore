@@ -9,4 +9,4 @@ Desktop.ini
 # Data
 ./static/*.csv
 ./log/*
-.git
+./model/*.csv
