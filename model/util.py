@@ -10,7 +10,7 @@ class Connect:
         # 大学城数据库
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
-        self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.30', 'root', 'Wangwang@scut123', 3306
+        self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.14', 'root', '123456', 8306
     
     # 数据库连接
     def connect(self, db_name, _id='1'):
@@ -27,6 +27,15 @@ class Connect:
         results = cursor.fetchall()
         db.close()
         return results
+    
+    # 将行政区code映射成name
+    def region_code2name(self,code):
+        sql = "SELECT region_name FROM micro_region WHERE region_code='{code}'".format(code=code)
+        result = self.query(self.fenqi,sql)
+        if result:
+            return result[0][0]
+        return None
+
 
 class Export:
     def __init__(self):
@@ -51,7 +60,8 @@ class Export:
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
-                data = []; data1 = {}; _data = []
+                data = []; data1 = {}; _data = []; _sub=list(_sub)
+                _sub[3] = self.connect.region_code2name(_sub[3]);_sub[4] = self.connect.region_code2name(_sub[4])
                 _data.extend([_sub[i] for i in range(1,9)])
                 sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
                 WHERE subbranch_id='{}' AND type IN (2,3) AND state=2 GROUP BY create_time 
@@ -107,6 +117,8 @@ class Export:
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
+                _sub = list(_sub)
+                _sub[3] = self.connect.region_code2name(_sub[3]);_sub[4] = self.connect.region_code2name(_sub[4])
                 data = []; data1 = {}; _data = []
                 _data.extend([_sub[i] for i in range(1,9)])
                 sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
