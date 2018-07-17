@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>汪汪运营统计系统</title>
+</head>
+<body>
+<div align="center" style="position: center; margin-top: 14%">
+  <form action="/signin" method="post">
+    <p><input name="username" placeholder="账号" value="{{ username }}"></p>
+    <p><input name="password" placeholder="密码" type="password"></p>
+    <p><button type="submit">登陆</button></p>
+  </form>
+  {% if message %}
+  <p style="color:red">{{ message }}</p>
+  {% endif %}
+  </div>
+</body>
+</html>
