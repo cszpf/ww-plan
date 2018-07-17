@@ -75,7 +75,7 @@ class Export:
                 data.extend(result1)
                 data.extend(result2)
                 del(result1,result2)
-                ddtgrq = (_sub[-1].date() if _sub[-1] != '' else datetime.date(2017,1,1)) + datetime.timedelta(days=5)#到店推广日期
+                ddtgrq = _sub[-1].date() if _sub[-1] != '' else datetime.date(2017,1,1)#到店推广日期
                 if data:#有消费记录
                     # 每一天门店流水
                     for _,__ in data:#消费金额和消费时间
@@ -133,7 +133,7 @@ class Export:
                 data.extend(result1)
                 data.extend(result2)
                 del(result1,result2)
-                ddtgrq = _sub[8].date() + datetime.timedelta(days=5)#到店推广日期
+                ddtgrq = _sub[8].date()#到店推广日期
                 if data:#有消费记录
                     # 每一天门店流水
                     for _,__ in data:#消费金额和消费时间
