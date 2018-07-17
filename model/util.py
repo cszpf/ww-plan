@@ -57,7 +57,7 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
@@ -75,8 +75,8 @@ class Export:
                 data.extend(result1)
                 data.extend(result2)
                 del(result1,result2)
+                ddtgrq = (_sub[-1].date() if _sub[-1] != '' else datetime.date(2017,1,1)) + datetime.timedelta(days=5)#到店推广日期
                 if data:#有消费记录
-                    ddtgrq = _sub[-1].date() + datetime.timedelta(days=5)#到店推广日期
                     # 每一天门店流水
                     for _,__ in data:#消费金额和消费时间
                         data1.update({__.date():data1.get(__.date(),0)+_})
@@ -114,7 +114,7 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time,AVERAGE_ASSESS_INCOME 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
@@ -133,18 +133,18 @@ class Export:
                 data.extend(result1)
                 data.extend(result2)
                 del(result1,result2)
+                ddtgrq = _sub[8].date() + datetime.timedelta(days=5)#到店推广日期
                 if data:#有消费记录
-                    ddtgrq = _sub[8].date() + datetime.timedelta(days=5)#到店推广日期
                     # 每一天门店流水
                     for _,__ in data:#消费金额和消费时间
                         data1.update({__.date():data1.get(__.date(),0)+_})
                     del(data)
                     max_date = max(data1.keys())
-                    len_date = len(set(data1.keys()))
+                    len_date = len([_ for _ in data1.keys() if (end_date - _).days<=30])
                     ifactive = True if len_date >= (16 if (end_date-ddtgrq).days >= 30 else (end_date-ddtgrq).days//2 + 1) else False
                     ifsilent = True if (end_date - max_date).days >= 15 else False
                 else:#没有消费记录
-                    ifactive = False; ifsilent = True
+                    ifactive = False; ifsilent = True if (end_date - ddtgrq).days >= 15 else False
                 _data.extend([ifactive, ifsilent])
                 for i in range((end_date-start_date).days):
                     x = start_date + datetime.timedelta(i)
