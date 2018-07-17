@@ -10,3 +10,4 @@ Desktop.ini
 ./static/*.csv
 ./log/*
 ./model/*.csv
+./model/__*
