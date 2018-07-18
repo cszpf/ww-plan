@@ -40,6 +40,69 @@ class Connect:
             return result[0][0]
         return None
 
+    # 查询对应标签的券的客单价的sql语句
+    def coupons_avg(self, label_id, start_date, end_date):
+        sql_merList = '''select merchant_id from {}.merchant'''
+        sql_cou_wechat = '''select cc.merchant_id, sum(wl.amount)as sum1, count(*)as num1 from {coupons}.coupons_log as cl, {fenqi}.wechat_pay_log as wl,
+                {coupons}.coupons as c, {coupons}.coupons_cfg_label_rela as l, {coupons}.coupons_config as cc where cl.wechat_pay_log_id=wl.wechat_pay_log_id and 
+                cl.coupons_id=c.coupons_id and c.coupons_config_id=l.coupons_config_id and c.coupons_config_id=cc.coupons_config_id and wl.state=2 and wl.type=3 and 
+                l.label_id='{label_id}' and wl.create_time>'{start_time}' and wl.create_time<'{end_time}' group by cc.merchant_id'''
+        sql_cou_dc = '''select cc.merchant_id, sum(abs(dl.amount))as sum2,count(*)as num2 from {coupons}.coupons_log as cl, {fenqi}.user_deposit_card_log as dl,
+                {coupons}.coupons as c, {coupons}.coupons_cfg_label_rela as l, {coupons}.coupons_config as cc 
+                where cl.user_deposit_card_log_id=dl.user_deposit_card_log_id and cl.coupons_id=c.coupons_id and c.coupons_config_id=l.coupons_config_id 
+                and c.coupons_config_id=cc.coupons_config_id and dl.amount<0 and l.label_id='{label_id}' and dl.create_time>'{start_time}' and dl.create_time<'{end_time}' group by cc.merchant_id'''
+        sql_avg = '''select merList.merchant_id, if((ifnull(num1,0)+ifnull(num2,0))=0,0,(ifnull(sum1,0)+ifnull(sum2,0))/(ifnull(num1,0)+ifnull(num2,0)))
+                as avg_amount from ({})as merList left join ({})as cw on merList.merchant_id=cw.merchant_id left join ({})as cd 
+                on merList.merchant_id=cd.merchant_id'''
+        return sql_avg.format(sql_merList.format(self.fenqi),
+                              sql_cou_wechat.format(coupons=self.coupons, fenqi=self.fenqi, label_id=label_id, start_time=start_date, end_time=end_date),
+                              sql_cou_dc.format(coupons=self.coupons, fenqi=self.fenqi, label_id=label_id, start_time=start_date, end_time=end_date))
+
+    # 查询邻店券的客单价的sql语句
+    def getSQL_LD_avg(self, start_date, end_date):
+        sql_merList = '''select merchant_id from {}.merchant'''
+        LD_help_wechat = '''select cc.merchant_id, count(*)as num1, sum(wl.amount)as sum1 from {coupons}.coupons c, 
+        {coupons}.coupons_config cc, {coupons}.coupons_log cl, {fenqi}.wechat_pay_log wl
+        where c.coupons_id=cl.coupons_id and cl.wechat_pay_log_id=wl.wechat_pay_log_id and c.coupons_config_id=cc.coupons_config_id
+        and c.used_time>'{start_time}' and c.used_time<'{end_time}' and wl.state=2 and wl.type=3
+        and c.coupons_promote_id is not null group by merchant_id'''.format(coupons=self.coupons, fenqi=self.fenqi,
+        start_time=start_date, end_time=end_date)
+        LD_help_dc = '''select cc.merchant_id, count(*)as num2, sum(abs(dl.amount))as sum2 from {coupons}.coupons c, 
+        {coupons}.coupons_log cl, {coupons}.coupons_config cc, {fenqi}.user_deposit_card_log dl
+        where c.coupons_id=cl.coupons_id and cl.user_deposit_card_log_id=dl.user_deposit_card_log_id
+        and c.coupons_config_id=cc.coupons_config_id and c.used_time>'{start_time}' and c.used_time<'{end_time}' and dl.amount<0 
+        and c.coupons_promote_id is not null group by merchant_id'''.format(coupons=self.coupons, fenqi=self.fenqi,
+        start_time=start_date, end_time=end_date)
+        LD_help_avg = '''select merList.merchant_id,if((ifnull(num1,0)+ifnull(num2,0))=0,0,(ifnull(sum1,0)+ifnull(sum2,0))/(ifnull(num1,0)+ifnull(num2,0)))
+        as avg_amount from ({})as merList left join ({})as lw on merList.merchant_id=lw.merchant_id left join ({})as ld
+        on merList.merchant_id=ld.merchant_id'''.format(sql_merList.format(self.fenqi), LD_help_wechat, LD_help_dc)
+        return LD_help_avg
+
+    # 查询券配置id对应的标签名
+    def cou_cfg_id2label(self, cou_cfg_id):
+        sql = '''select label_name from labels, coupons_cfg_label_rela cl
+              where labels.label_id=cl.label_id and coupons_config_id='{}';'''.format(cou_cfg_id)
+        results = self.query(self.coupons, sql)
+        labels = []
+        for result in results:
+            labels.append(result[0])
+        return ';'.join(labels) if len(labels) > 0 else '无'
+
+    # 商户id对应名称
+    def mer_id2name(self, merchant_id):
+        sql = '''select short_name from merchant where merchant_id='{}';'''.format(merchant_id)
+        return self.query(self.fenqi, sql)[0][0]
+
+    # 查找帮发券的邻店
+    def get_LD(self, coupons_cfg_id):
+        sql = '''select distinct merchant_id from coupons, coupons_promote cp
+        where coupons.coupons_promote_id=cp.coupons_promote_id and coupons_config_id='{}';'''.format(coupons_cfg_id)
+        results = self.query(self.coupons, sql)
+        LD = []
+        for result in results:
+            LD.append(self.mer_id2name(result[0]))
+        return ';'.join(LD)
+
 class Export:
     def __init__(self):
         self.connect = Connect()
@@ -90,7 +153,6 @@ class Export:
 
         # 关注券、促活券、邻店券统计
         GZ = '145556';CH = '145558'
-        sql_merList = '''select merchant_id from {}.merchant'''
         sql_coupons = '''select merchant_id, count(*)as num from coupons, coupons_cfg_label_rela as cl, coupons_config 
         where coupons.coupons_config_id=cl.coupons_config_id and coupons.coupons_config_id=coupons_config.coupons_config_id 
         and label_id = '{}' and coupons.create_time > '{}' and coupons.create_time < '{}' {} group by merchant_id;'''
@@ -99,27 +161,11 @@ class Export:
         sql_GZ_get = sql_coupons.format(GZ, start_date, end_date, '')
         sql_GZ_use = sql_coupons.format(GZ, start_date, end_date, 'and coupons.status=1')
         sql_GZ_launch = sql_launch.format(GZ)
+        sql_GZ_avg = self.connect.coupons_avg(GZ, start_date, end_date)
         sql_CH_get = sql_coupons.format(CH, start_date, end_date, '')
         sql_CH_use = sql_coupons.format(CH, start_date, end_date, 'and coupons.status=1')
         sql_CH_launch = sql_launch.format(CH)
-
-        sql_cou_wechat = '''select cc.merchant_id, sum(wl.amount)as sum1, count(*)as num1 from {coupons}.coupons_log as cl, {fenqi}.wechat_pay_log as wl,
-        {coupons}.coupons as c, {coupons}.coupons_cfg_label_rela as l, {coupons}.coupons_config as cc where cl.wechat_pay_log_id=wl.wechat_pay_log_id and 
-        cl.coupons_id=c.coupons_id and c.coupons_config_id=l.coupons_config_id and c.coupons_config_id=cc.coupons_config_id and wl.state=2 and wl.type=3 and 
-        l.label_id='{label_id}' and wl.create_time>'{start_time}' and wl.create_time<'{end_time}' group by cc.merchant_id'''
-        sql_cou_dc = '''select cc.merchant_id, sum(abs(dl.amount))as sum2,count(*)as num2 from {coupons}.coupons_log as cl, {fenqi}.user_deposit_card_log as dl,
-        {coupons}.coupons as c, {coupons}.coupons_cfg_label_rela as l, {coupons}.coupons_config as cc 
-        where cl.user_deposit_card_log_id=dl.user_deposit_card_log_id and cl.coupons_id=c.coupons_id and c.coupons_config_id=l.coupons_config_id 
-        and c.coupons_config_id=cc.coupons_config_id and dl.amount<0 and l.label_id='{label_id}' and dl.create_time>'{start_time}' and dl.create_time<'{end_time}' group by cc.merchant_id'''
-        sql_avg = '''select merList.merchant_id, if((ifnull(num1,0)+ifnull(num2,0))=0,0,(ifnull(sum1,0)+ifnull(sum2,0))/(ifnull(num1,0)+ifnull(num2,0)))
-        as avg_amount from ({})as merList left join ({})as cw on merList.merchant_id=cw.merchant_id left join ({})as cd 
-        on merList.merchant_id=cd.merchant_id'''
-        sql_GZ_avg = sql_avg.format(sql_merList.format(self.connect.fenqi), sql_cou_wechat.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        label_id=GZ, start_time=start_date, end_time=end_date), sql_cou_dc.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        label_id=GZ, start_time=start_date, end_time=end_date))
-        sql_CH_avg = sql_avg.format(sql_merList.format(self.connect.fenqi), sql_cou_wechat.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        label_id=CH, start_time=start_date, end_time=end_date), sql_cou_dc.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        label_id=CH, start_time=start_date, end_time=end_date))
+        sql_CH_avg = self.connect.coupons_avg(CH, start_date, end_date)
 
         #邻店帮我
         LD_help = '''select merchant_id,count(*)as num from coupons, coupons_config where 
@@ -127,21 +173,7 @@ class Export:
         and coupons.{time}<'{end_time}' and coupons.coupons_promote_id is not null group by merchant_id'''
         LD_help_get = LD_help.format(time='create_time', start_time=start_date, end_time=end_date)
         LD_help_use = LD_help.format(time='used_time', start_time=start_date, end_time=end_date)
-        LD_help_wechat = '''select cc.merchant_id, count(*)as num1, sum(wl.amount)as sum1 from {coupons}.coupons c, 
-        {coupons}.coupons_config cc, {coupons}.coupons_log cl, {fenqi}.wechat_pay_log wl
-        where c.coupons_id=cl.coupons_id and cl.wechat_pay_log_id=wl.wechat_pay_log_id and c.coupons_config_id=cc.coupons_config_id
-        and c.used_time>'{start_time}' and c.used_time<'{end_time}' and wl.state=2 and wl.type=3
-        and c.coupons_promote_id is not null group by merchant_id'''.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        start_time=start_date, end_time=end_date)
-        LD_help_dc = '''select cc.merchant_id, count(*)as num2, sum(abs(dl.amount))as sum2 from {coupons}.coupons c, 
-        {coupons}.coupons_log cl, {coupons}.coupons_config cc, {fenqi}.user_deposit_card_log dl
-        where c.coupons_id=cl.coupons_id and cl.user_deposit_card_log_id=dl.user_deposit_card_log_id
-        and c.coupons_config_id=cc.coupons_config_id and c.used_time>'{start_time}' and c.used_time<'{end_time}' and dl.amount<0 
-        and c.coupons_promote_id is not null group by merchant_id'''.format(coupons=self.connect.coupons, fenqi=self.connect.fenqi,
-        start_time=start_date, end_time=end_date)
-        LD_help_avg = '''select merList.merchant_id,if((ifnull(num1,0)+ifnull(num2,0))=0,0,(ifnull(sum1,0)+ifnull(sum2,0))/(ifnull(num1,0)+ifnull(num2,0)))
-        as avg_amount from ({})as merList left join ({})as lw on merList.merchant_id=lw.merchant_id left join ({})as ld
-        on merList.merchant_id=ld.merchant_id'''.format(sql_merList.format(self.connect.fenqi), LD_help_wechat, LD_help_dc)
+        LD_help_avg = self.connect.getSQL_LD_avg(start_date, end_date)
         #我帮邻店
         help_LD = '''select merchant_id,count(*)as num from coupons, coupons_promote where 
         coupons.coupons_promote_id=coupons_promote.coupons_promote_id and coupons.{time}>'{start_time}' 
@@ -200,10 +232,80 @@ class Export:
         df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
         return all_data
 
+    def qpm(self, start_date, end_date, dir_name):
+        columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
+                   'TOP10\n促活券名称', 'TOP10\n促活券使用数', 'TOP10\n促活券商户名称', 'TOP10\n促活券标签', 'TOP10\n促活券客单价',
+                   'TOP10\n邻店券名称', 'TOP10\n邻店券使用数', 'TOP10\n邻店券的发券商户名称', 'TOP10\n邻店券的用券商户名称',
+                   'TOP10\n邻店券标签', 'TOP10\n邻店券客单价']
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        all_data = []
+
+        GZ = '145556';CH = '145558'
+        sql_coupons = '''select cc.name, count(*) as num, merchant_id, cc.coupons_config_id from coupons, coupons_cfg_label_rela cl, coupons_config cc
+        where coupons.coupons_config_id=cl.coupons_config_id and coupons.coupons_config_id=cc.coupons_config_id and label_id = '{}' and 
+        coupons.create_time > '{}' and coupons.create_time < '{}' and coupons.status=1 group by cc.coupons_config_id order by num desc;'''
+        # 关注券
+        sql_GZ = sql_coupons.format(GZ, start_date, end_date)
+        result_GZ1 = self.connect.query(self.connect.coupons, sql_GZ)
+        sql_GZ_avg = self.connect.coupons_avg(GZ, start_date, end_date)
+        result_GZ2 = self.connect.query('', sql_GZ_avg)
+        GZ_avg = {}
+        for m in result_GZ2:
+            GZ_avg[m[0]]=m[1]
+        # 促活券
+        sql_CH = sql_coupons.format(CH, start_date, end_date)
+        result_CH1 = self.connect.query(self.connect.coupons, sql_CH)
+        sql_CH_avg = self.connect.coupons_avg(CH, start_date, end_date)
+        result_CH2 = self.connect.query('', sql_CH_avg)
+        CH_avg = {}
+        for m in result_CH2:
+            CH_avg[m[0]]=m[1]
+        # 邻店券
+        sql_LD = '''select cc.name,count(*)as num, merchant_id, cc.coupons_config_id from coupons, coupons_config cc where 
+        coupons.coupons_config_id=cc.coupons_config_id and coupons.status=1 and coupons.used_time>'{}' and coupons.used_time<'{}' 
+        and coupons.coupons_promote_id is not null group by cc.coupons_config_id order by num desc'''
+        result_LD1 = self.connect.query(self.connect.coupons, sql_LD.format(start_date, end_date))
+        sql_LD_avg = self.connect.getSQL_LD_avg(start_date, end_date)
+        result_LD2 = self.connect.query('', sql_LD_avg)
+        LD_avg = {}
+        for m in result_LD2:
+            LD_avg[m[0]]=m[1]
+
+        for i in range(10):
+            _data = []
+            _data.append("TOP{}".format(i+1))
+            if i < len(result_GZ1):
+                _data.extend(result_GZ1[i][0:2])
+                _data.extend([self.connect.mer_id2name(result_GZ1[i][2]), self.connect.cou_cfg_id2label(result_GZ1[i][-1]),
+                              GZ_avg[result_GZ1[i][2]]])   #商户名称、标签、客单价
+            else:
+                _data.extend(['-', '-', '-', '-', '-'])
+            if i < len(result_CH1):
+                _data.extend(result_GZ1[i][0:2])
+                _data.extend([self.connect.mer_id2name(result_CH1[i][2]), self.connect.cou_cfg_id2label(result_CH1[i][-1]),
+                              GZ_avg[result_CH1[i][2]]])
+            else:
+                _data.extend(['-', '-', '-', '-', '-'])
+            if i < len(result_LD1):
+                _data.extend(result_LD1[i][0:2])
+                _data.extend([self.connect.mer_id2name(result_LD1[i][2]), self.connect.get_LD(result_LD1[i][-1]),
+                              self.connect.cou_cfg_id2label(result_LD1[i][-1]), LD_avg[result_LD1[i][2]]])
+            else:
+                _data.extend(['-', '-', '-', '-', '-', '-'])
+            all_data.append(_data)
+            # print(all_data)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+        df = pd.DataFrame(all_data, columns=columns)
+        df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
+        return all_data
+
 def main():
     export = Export()
     # export.mdls('2018-6-1','2018-6-3','./')
-    export.shyq('2017-6-1','2018-7-16','./')
+    # export.shyq('2017-6-1','2018-7-16','./')
+    export.qpm('2017-6-1','2018-7-16','./')
 
 if __name__ == '__main__':
     main()
