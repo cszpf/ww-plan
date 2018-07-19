@@ -46,6 +46,20 @@ class Export:
     def __init__(self):
         self.connect = Connect()
     
+    def concat(self, df, n):
+        '''
+        df:需要汇总统计的表<pd.DataFrame>
+        n:非日期列数<int>
+        return:汇总之后的表<pd.DataFrame>
+        '''
+        x = pd.DataFrame(columns=df.columns)
+        temp = ['汇总']
+        temp.extend([None for i in range(n-1)])
+        x[df.columns[n:]] = pd.DataFrame(df[df.columns[n:]].sum()).T
+        x[df.columns[:n]] = temp
+        print(x)
+        return pd.concat([df, x], ignore_index=True)
+
     # 实现门店流水表的在线生成
     def mdls(self, start_date, end_date, dir_name):
         # start_date:形如"2018-xx-xx"的str
@@ -100,6 +114,7 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
+        df = self.concat(df, 10)
         df.to_csv(os.path.join(dir_name,'mdls.csv'),index=False,encoding='gbk',sep=',')
         return all_data
 
@@ -165,6 +180,7 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
+        df = self.concat(df, 10)
         df.to_csv(os.path.join(dir_name,'mdlszb.csv'),index=False,encoding='gbk',sep=',')
         return all_data
     
