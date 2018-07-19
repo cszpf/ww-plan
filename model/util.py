@@ -4,6 +4,9 @@ import datetime
 import os
 import pandas as pd
 import util_yj as yj
+import util_lz as lz
+import util_lcs as lcs
+
 cwd = os.getcwd()
 
 class Connect:
@@ -115,10 +118,10 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
         df = self.concat(df, 10)
-        df.to_csv(os.path.join(dir_name,'mdls.csv'),index=False,encoding='gbk',sep=',')
-        return all_data
+        # df.to_csv(os.path.join(dir_name,'mdls.csv'),index=False,encoding='gbk',sep=',')
+        return df, '门店流水'
 
-        # 实现门店流水占比表的在线生成
+    # 实现门店流水占比表的在线生成
     def mdlszb(self, start_date, end_date, dir_name):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
@@ -181,8 +184,8 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
         df = self.concat(df, 10)
-        df.to_csv(os.path.join(dir_name,'mdlszb.csv'),index=False,encoding='gbk',sep=',')
-        return all_data
+        # df.to_csv(os.path.join(dir_name,'mdlszb.csv'),index=False,encoding='gbk',sep=',')
+        return df, '门店流水占比'
     
     def shyq(self, start_date, end_date, dir_name):
         yj_Export = yj.Export()
@@ -191,6 +194,18 @@ class Export:
     def qpm(self, start_date, end_date, dir_name):
         yj_Export = yj.Export()
         return yj_Export.qpm(start_date, end_date, dir_name)
+
+    def mdhz(self, start_date, end_date, dir_name):
+        lz_EXport = lz.Export()
+        return lz_EXport.mdhz(start_date, end_date, dir_name)
+
+    def khhz(self, start_date, end_date, dir_name):
+        lcs_export = lcs.Export()
+        return lcs_export.khhz(start_date, end_date, dir_name)
+    
+    def qhz(self, start_date, end_date, dir_name):
+        lcs_export = lcs.Export()
+        return lcs_export.qhz(start_date, end_date, dir_name)
 
 def main():
     export = Export()

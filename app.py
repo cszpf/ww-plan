@@ -7,6 +7,8 @@ import sys
 import datetime
 sys.path.append('./model')
 from util import Export
+import pandas as pd
+
 cwd = os.getcwd()
 jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
     os.path.join(cwd, 'templates')))
@@ -44,10 +46,19 @@ def export():
     ids = request.form['ids']
     if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>datetime.date.today():
         return render_template('table-export.html', start_date=start_date, end_date=end_date)
-    eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
-    response = make_response(send_file("./static/{ids}.csv".format(ids=ids)))
-    response.headers['Content-Disposition'] = "attachment;filename={}.csv".format(ids)
+    datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
+    data2excel(datas,ids)
+    response = make_response(send_file("./static/{ids}.xlsx".format(ids=ids)))
+    response.headers['Content-Disposition'] = "attachment;filename={}.xlsx".format(ids)
     return response
+
+def data2excel(datas, ids):
+    if not os.path.exists('./static'):
+        os.makedirs('./static')
+    writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))
+    for df, i in zip(datas[0], datas[1]):
+        df.to_excel(writer, '{i}'.format(i), encoding='gbk')
+    writer.save()
 
 if __name__ == '__main__':
     if not os.path.exists('./log'):
@@ -58,5 +69,5 @@ if __name__ == '__main__':
         '%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s - %(lineno)s - %(message)s')
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
-    app.run(host='0.0.0.0', port='5000', debug=False)
+    app.run(host='0.0.0.0', port='5000', debug=True)
     

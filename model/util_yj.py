@@ -229,8 +229,8 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
-        df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
-        return all_data
+        # df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
+        return df, '商户用券详情'
 
     def qpm(self, start_date, end_date, dir_name):
         columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
@@ -298,8 +298,8 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
-        df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
-        return all_data
+        # df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
+        return df, '券排名'
 
 def main():
     export = Export()
