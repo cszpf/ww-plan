@@ -10,7 +10,7 @@ class Connect:
         # 大学城数据库
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
-        self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.30', 'root', 'Wangwang@scut123', 3306
+        self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.14', 'root', '123456', 8306
     
     # 数据库连接
     def connect(self, db_name, _id='1'):
