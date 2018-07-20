@@ -11,12 +11,7 @@ class Connect:
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
         self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.14', 'root', '123456', 8306
-    # 数据库连接
-    # def connect(self, db_name, _id='1'):
-    #     # _id:'1'表示大学城数据库,'2'表示汪汪数据库
-    #     db = eval("""MySQLdb.connect(self.ip{id}, self.user{id}, self.pwd{id},
-    #     db_name, port=self.port{id}, charset='utf8')""".format(id=_id))
-    #     return db
+
     def connect(self, db_name, _id='1'):
         # _id:'1'表示大学城数据库,'2'表示汪汪数据库
         if (db_name != ''):
@@ -47,134 +42,6 @@ class Export:
     def __init__(self):
         self.connect = Connect()
     # 实现门店流水表的在线生成
-    def mdls(self, start_date, end_date, dir_name):
-        # start_date:形如"2018-xx-xx"的str
-        # end_date:形如"2018-xx-xx"的str
-        # dir_name:存放门店流水表的目标文件夹
-        columns = ['门店', '商户', '行政区', '微区域', '行业', '销售姓名', '运营姓名', '上线时间', '是否活跃', '是否沉默']
-        all_data = []
-        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
-        for i in range((end_date - start_date).days):
-            x = start_date + datetime.timedelta(i)
-            columns.append(x.strftime("%y%m%d"))
-        sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
-        merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time 
-        FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type """
-        result = self.connect.query(self.connect.fenqi, sql1)
-        for _sub in result:
-            if _sub:
-                data = [];
-                data1 = {};
-                _data = [];
-                _sub = list(_sub)
-                _sub[3] = self.connect.region_code2name(_sub[3]);
-                _sub[4] = self.connect.region_code2name(_sub[4])
-                _data.extend([_sub[i] for i in range(1, 9)])
-                sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
-                WHERE subbranch_id='{}' AND type IN (2,3) AND state=2 GROUP BY create_time 
-                ORDER BY create_time """.format(_sub[0])
-                sql2 = """SELECT sum(-amount),create_time FROM user_deposit_card_log 
-                WHERE subbranch_id='{}' AND amount < 0 GROUP BY create_time 
-                ORDER BY create_time """.format(_sub[0])
-                result1 = self.connect.query(self.connect.fenqi, sql1)  # 微信支付的消费结果
-                result2 = self.connect.query(self.connect.fenqi, sql2)  # 储值卡支付的消费结果
-                data.extend(result1)
-                data.extend(result2)
-                del (result1, result2)
-                if data:  # 有消费记录
-                    ddtgrq = _sub[-1].date() + datetime.timedelta(days=5)  # 到店推广日期
-                    # 每一天门店流水
-                    for _, __ in data:  # 消费金额和消费时间
-                        data1.update({__.date(): data1.get(__.date(), 0) + _})
-                    del (data)
-                    max_date = max(data1.keys())
-                    len_date = len(set(data1.keys()))
-                    ifactive = True if len_date >= (
-                        16 if (end_date - ddtgrq).days >= 30 else (end_date - ddtgrq).days // 2 + 1) else False
-                    ifsilent = True if (end_date - max_date).days >= 15 else False
-                else:  # 没有消费记录
-                    ifactive = False;
-                    ifsilent = True
-                _data.extend([ifactive, ifsilent])
-                for i in range((end_date - start_date).days):
-                    x = start_date + datetime.timedelta(i)
-                    _data.append(data1.get(x, 0))
-            all_data.append(_data)
-        # print(all_data)
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-        df = pd.DataFrame(all_data, columns=columns)
-        df.to_csv(os.path.join(dir_name, 'mdls.csv'), index=False, encoding='gbk', sep=',')
-        return all_data
-
-      # 实现门店流水占比表的在线生成
-    def mdlszb(self, start_date, end_date, dir_name):
-        columns = ['门店', '商户', '行政区', '微区域', '行业', '销售姓名', '运营姓名', '上线时间', '是否活跃', '是否沉默']
-        all_data = []
-        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
-        for i in range((end_date - start_date).days):
-            x = start_date + datetime.timedelta(i)
-            columns.append(x.strftime("%y%m%d"))
-        sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
-        merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time,AVERAGE_ASSESS_INCOME 
-        FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type """
-        result = self.connect.query(self.connect.fenqi, sql1)
-        for _sub in result:
-            if _sub:#如果有值的话
-                _sub = list(_sub)#把一行有逗号的数据变成列表，把三四行政区code映射成name
-                _sub[3] = self.connect.region_code2name(_sub[3]);#行政区
-                _sub[4] = self.connect.region_code2name(_sub[4])#微区域
-                data = [];#用来存放每一笔的消费（消费+创建时间）
-                data1 = {};#用来存每一个门店的消费加创建时间（每一天的流水，按时间天数为键）
-                _data = []#用来存放一行数据
-                _data.extend([_sub[i] for i in range(1, 9)])#把result每一行的数据_sub放入_data列表中
-                sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
-                WHERE subbranch_id='{}' AND type IN (2,3) AND state=2 GROUP BY create_time 
-                ORDER BY create_time """.format(_sub[0])
-                sql2 = """SELECT sum(-amount),create_time FROM user_deposit_card_log 
-                WHERE subbranch_id='{}' AND amount < 0 GROUP BY create_time 
-                ORDER BY create_time """.format(_sub[0])#因为result每一行的数据_sub都是一个门店
-                result1 = self.connect.query(self.connect.fenqi, sql1)  # 微信支付的消费结果
-                result2 = self.connect.query(self.connect.fenqi, sql2)  # 储值卡支付的消费结果
-                data.extend(result1)
-                data.extend(result2)#用data记录每一笔的消费（消费+创建时间）
-                del (result1, result2)
-                if data:  # 有消费记录
-                    ddtgrq = _sub[8].date() + datetime.timedelta(days=5)  # 到店推广日期
-                    # 每一天门店流水
-                    for _, __ in data:  # 在data1里面存入这一个门店的消费金额和消费时间
-                        data1.update({__.date(): data1.get(__.date(), 0) + _})
-                    del (data)
-                    max_date = max(data1.keys())#最大时间
-                    len_date = len(set(data1.keys()))#时间长度
-                    ifactive = True if len_date >= (
-                        16 if (end_date - ddtgrq).days >= 30 else (end_date - ddtgrq).days // 2 + 1) else False
-                    ifsilent = True if (end_date - max_date).days >= 15 else False
-                else:  # 没有消费记录
-                    ifactive = False;
-                    ifsilent = True
-                _data.extend([ifactive, ifsilent])
-
-                for i in range((end_date - start_date).days):
-                    x = start_date + datetime.timedelta(i)
-                    try:
-                        _zb = round(float(data1.get(x, 0)) / float(_sub[-1]), 3)
-                    except:
-                        _zb = 0
-                    finally:
-                        _data.append(_zb)
-            all_data.append(_data)
-        print(all_data)
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-        df = pd.DataFrame(all_data, columns=columns)
-        df.to_csv(os.path.join(dir_name, 'mdlszb.csv'), index=False, encoding='gbk', sep=',')
-        return all_data
-
 
     def shqxq(self, start_date, end_date, dir_name):
         enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + datetime.timedelta(1)
@@ -439,7 +306,7 @@ class Export:
 def main():
     export = Export()
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
-    #export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
-    export.mdpm('2018-1-03', '2018-7-30', r'\Users\qiqi\Desktop')
+    export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
+    #export.mdpm('2018-1-03', '2018-7-30', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
