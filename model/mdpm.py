@@ -238,7 +238,7 @@ class Export:
             for i in range(hycount, 11):
                 hylie1.append('-')
                 hylie2.append('-')
-        hyzb = round(hytopls / totalamount, 2)  # 流水占比
+        hyzb = round(hytopls / totalamount, 3)  # 流水占比
         hylie1.append(hyzb)
         all_data.append(hylie1)
         all_data.append(hylie2)
@@ -256,7 +256,7 @@ class Export:
             for i in range(lscount, 11):
                 lslie1.append('-')
                 lslie2.append('-')
-        lszb = round(lstopls / totalamount, 2)  # 流水占比
+        lszb = round(lstopls / totalamount, 3)  # 流水占比
         lslie1.append(lszb)
         all_data.append(lslie1)
         all_data.append(lslie2)
@@ -296,7 +296,7 @@ class Export:
                 yqlie1.append('-')
                 yqlie2.append('-')
                 yqlie3.append('-')
-        zb3 = round(yqtopls / totalamount, 2)  # 流水占比
+        zb3 = round(yqtopls / totalamount, 3)  # 流水占比
         yqlie1.append(zb3)
         all_data.append(yqlie1)
         all_data.append(yqlie2)
@@ -319,7 +319,7 @@ class Export:
             for i in range(kdjcount, 11):
                 kdjlie1.append('-')
                 kdjlie2.append('-')
-        zb4 = round(kdjtopls / totalamount, 2)  # 流水占比
+        zb4 = round(kdjtopls / totalamount, 3)  # 流水占比
         kdjlie1.append(zb4)
         all_data.append(kdjlie1)
         all_data.append(kdjlie2)
