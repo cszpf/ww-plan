@@ -60,7 +60,6 @@ class Export:
         temp.extend([None for i in range(n-1)])
         x[df.columns[n:]] = pd.DataFrame(df[df.columns[n:]].sum()).T
         x[df.columns[:n]] = temp
-        print(x)
         return pd.concat([df, x], ignore_index=True)
 
     # 实现门店流水表的在线生成

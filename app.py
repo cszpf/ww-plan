@@ -56,9 +56,14 @@ def data2excel(datas, ids):
     if not os.path.exists('./static'):
         os.makedirs('./static')
     writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))
-    for df, i in zip(datas[0], datas[1]):
-        df.to_excel(writer, '{i}'.format(i), encoding='gbk')
-    writer.save()
+    try:
+        assert len(datas[0]) == len(datas[1])
+        for df, i in zip(datas[0], datas[1]):
+            df.to_excel(writer, '{i}'.format(i=i), encoding='gbk')
+    except:
+        datas[0].to_excel(writer, '{i}'.format(i=datas[1]), encoding='gbk')
+    finally:
+        writer.save()
 
 if __name__ == '__main__':
     if not os.path.exists('./log'):
