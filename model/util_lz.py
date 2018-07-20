@@ -95,7 +95,7 @@ class Export:
             _data = []
             for _sub in result:
                 if _sub:
-                    datelist = []; 
+                    datelist = []
                     data = subdict[_sub[0]]
                     if data:
                         # 每一天门店流水
@@ -249,11 +249,11 @@ class Export:
             x = start_date + datetime.timedelta(i)
             #指定日期前15天没有流水的商户
             tempdata = []
-            _data = set()
+            #_data = set()
             merdict = {}
             for _sub in result:
                 if _sub:
-                    datelist = []; 
+                    datelist = []
                     data = subdict[_sub[0]]
                     if data:
                         for _,__ in data:
@@ -268,21 +268,21 @@ class Export:
                             merdict[merid] = 0
                         merdict[merid] += 1
             for merid in merdict:
-                sql3 = """SELECT a.merchant_id,merchant_name, subbranch_id, subbranch_name 
+                sql3 = """SELECT a.merchant_id, merchant_name, subbranch_id, subbranch_name 
                 FROM merchant a, subbranch b
                 WHERE a.merchant_id = b.merchant_id AND a.merchant_id = '{}'""".format(merid)
                 result3 = self.connect.query(self.connect.fenqi, sql3)
                 if(len(result3) == merdict[merid]):
                     tempdata.append(merid)
             #后台优惠券全部下架的商户
-            for j in tempdata:
-                sql4 = """SELECT merchant_id, subbranch_id
-                FROM coupons_config
-                WHERE merchant_id = '{}' AND (status = 1 OR status = 2)""".format(j)
-                result4 = self.connect.query(self.connect.coupons, sql4)
-                if(len(result4) == 0):
-                    _data.add(self.connect.merid2shortname(j))
-            all_data.append(list(_data))  
+            # for j in tempdata:
+            #     sql4 = """SELECT merchant_id, subbranch_id
+            #     FROM coupons_config
+            #     WHERE merchant_id = '{}' AND (status = 1 OR status = 2)""".format(j)
+            #     result4 = self.connect.query(self.connect.coupons, sql4)
+            #     if(len(result4) == 0):
+            #         _data.add(self.connect.merid2shortname(j))
+            all_data.append(tempdata)  
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
@@ -366,12 +366,23 @@ class Export:
             except:
                 aver_house_lszb = 0
             _data.extend([accum_yyls, accum_lszb, aver_house_access_income, aver_house_yyls, aver_house_lszb])
-            
-            hymd_num = len(hymd_data[x.strftime("%y%m%d")])
+            try:
+                hymd_num = len(hymd_data.loc[:,x.strftime("%y%m%d")])
+            except:
+                hymd_num = 0  
             hymd_zb = round(float(hymd_num)/float(accum_sub),3)
-            cmmd_num = len(cmmd_data[x.strftime("%y%m%d")])
-            ydsh_num = len(ydsh_data[x.strftime("%y%m%d")])
-            lssh_num = len(lssh_data[x.strftime("%y%m%d")])
+            try:
+                cmmd_num = len(cmmd_data.loc[:,x.strftime("%y%m%d")])
+            except:
+                cmmd_num = 0
+            try:
+                ydsh_num = len(ydsh_data.loc[:,x.strftime("%y%m%d")])
+            except:
+                ydsh_num = 0
+            try:
+                lssh_num = len(lssh_data.loc[:,x.strftime("%y%m%d")])
+            except:
+                lssh_num = 0
             _data.extend([hymd_num, hymd_zb, cmmd_num, ydsh_num, lssh_num])
             all_data.append(_data)
         df = pd.DataFrame(all_data,index = indexs, columns = pd.Index(columns, name = '指标'))
