@@ -74,7 +74,7 @@ def all2excel(start_date, end_date):
     for fun in main_export.__dir__():
         if '__' in fun:
             continue
-        _datas = eval('''main_export.{}({},{},'')'''.format(fun,start_date,end_date))
+        _datas = eval('''main_export.{}('{}','{}','./static')'''.format(fun,start_date,end_date))
         try:
             assert len(_datas[0]) == len(_datas[1])
             datas.extend(_datas[0]); mzs.extend(_datas[1])
