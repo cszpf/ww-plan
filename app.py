@@ -69,9 +69,6 @@ def data2excel(datas, ids):
         writer.save()
 
 def all2excel(start_date, end_date):
-    if not os.path.exists('./static'):
-        os.makedirs('./static')
-    writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))
     main_export = Export()
     datas, mzs = [], []
     for fun in main_export.__dir__():
@@ -83,7 +80,6 @@ def all2excel(start_date, end_date):
             datas.extend(_datas[0]); mzs.extend(_datas[1])
         except:
             datas.append(_datas[0]); mzs.append(_datas[1])
-    
     return datas, mzs
 
 if __name__ == '__main__':
