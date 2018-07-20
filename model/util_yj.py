@@ -234,7 +234,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
         df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
-        return all_data
+        return df, '商户用券详情'
 
     def qpm(self, start_date, end_date, dir_name):
         columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
@@ -303,7 +303,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
         df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
-        return all_data
+        return df, '券排名'
 
     def ydqxq(self, start_date, end_date, dir_name):
         columns = ['日期', '名称', '商户', '标签', '领券量', '发放结束日期']
@@ -342,14 +342,15 @@ class Export:
             all_data3.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
                               self.connect.cou_cfg_id2label(res[3]), get_num, res[0].strftime("%y%m%d")])
 
-        all_data = [all_data1, all_data2, all_data3]
-        file = ['kuaidaoqi.csv', 'xiugai.csv', 'xiaxian.csv']
+        all_data = [all_data1, all_data2, all_data3];   all_df = []
+        file = ['快到期券详情', '修改券详情', '下线券详情']
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        for i in range(len(all_data)):
-            df = pd.DataFrame(all_data[i], columns=columns)
-            df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
-        return all_data
+        for d in all_data:
+            df = pd.DataFrame(d, columns=columns)
+            all_df.append(df)
+            # df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
+        return all_df, file
 
 def main():
     export = Export()
