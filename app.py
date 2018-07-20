@@ -62,9 +62,9 @@ def data2excel(datas, ids):
     try:
         assert len(datas[0]) == len(datas[1])
         for df, i in zip(datas[0], datas[1]):
-            df.to_excel(writer, '{i}'.format(i=i), encoding='gbk')
+            df.to_excel(writer, '{i}'.format(i=i), encoding='gbk', index=False)
     except:
-        datas[0].to_excel(writer, '{i}'.format(i=datas[1]), encoding='gbk')
+        datas[0].to_excel(writer, '{i}'.format(i=datas[1]), encoding='gbk', index=False)
     finally:
         writer.save()
 

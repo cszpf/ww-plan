@@ -6,9 +6,22 @@ import pandas as pd
 import util_yj as yj
 import util_lz as lz
 import util_lcs as lcs
-import mdpm as qq
+import util_qq as qq
 
 cwd = os.getcwd()
+
+def concat(df, n):
+    '''
+    df:需要汇总统计的表<pd.DataFrame>
+    n:非日期列数<int>
+    return:汇总之后的表<pd.DataFrame>
+    '''
+    x = pd.DataFrame(columns=df.columns)
+    temp = ['汇总']
+    temp.extend([None for i in range(n-1)])
+    x[df.columns[n:]] = pd.DataFrame(df[df.columns[n:]].sum()).T
+    x[df.columns[:n]] = temp
+    return pd.concat([df, x], ignore_index=True)
 
 class Connect:
     def __init__(self):
@@ -49,19 +62,6 @@ class Connect:
 class Export:
     def __init__(self):
         self.connect = Connect()
-    
-    def concat(self, df, n):
-        '''
-        df:需要汇总统计的表<pd.DataFrame>
-        n:非日期列数<int>
-        return:汇总之后的表<pd.DataFrame>
-        '''
-        x = pd.DataFrame(columns=df.columns)
-        temp = ['汇总']
-        temp.extend([None for i in range(n-1)])
-        x[df.columns[n:]] = pd.DataFrame(df[df.columns[n:]].sum()).T
-        x[df.columns[:n]] = temp
-        return pd.concat([df, x], ignore_index=True)
 
     # 实现门店流水表的在线生成
     def mdls(self, start_date, end_date, dir_name):
@@ -117,8 +117,7 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
-        df = self.concat(df, 10)
-        # df.to_csv(os.path.join(dir_name,'mdls.csv'),index=False,encoding='gbk',sep=',')
+        df = concat(df, 10)
         return df, '门店流水'
 
     # 实现门店流水占比表的在线生成
@@ -183,8 +182,7 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
-        df = self.concat(df, 10)
-        # df.to_csv(os.path.join(dir_name,'mdlszb.csv'),index=False,encoding='gbk',sep=',')
+        df = concat(df, 10)
         return df, '门店流水占比'
     
     def shyq(self, start_date, end_date, dir_name):
@@ -205,11 +203,21 @@ class Export:
     
     def qhz(self, start_date, end_date, dir_name):
         lcs_export = lcs.Export()
-        return lcs_export.qhz(start_date, end_date, dir_name)
+        yj_export = yj.Export()
+        df, names = [], []
+        qhz = lcs_export.qhz(start_date, end_date, dir_name)
+        df.append(qhz[0]); names.append(qhz[1])
+        ydqxq = yj_export.ydqxq(start_date, end_date, dir_name)
+        df.extend(ydqxq[0]); names.extend(ydqxq[1])
+        return df, names
 
     def mdpm(self, start_date, end_date, dir_name):
         qq_export = qq.Export()
         return qq_export.mdpm(start_date, end_date, dir_name)
+
+    def shqxq(self, start_date, end_date, dir_name):
+        qq_export = qq.Export()
+        return qq_export.shqxq(start_date,end_date,dir_name)
 
 def main():
     export = Export()
