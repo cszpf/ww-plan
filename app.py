@@ -46,7 +46,10 @@ def export():
     ids = request.form['ids']
     if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>datetime.date.today():
         return render_template('table-export.html', start_date=start_date, end_date=end_date)
-    datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
+    if ids != 'all':
+        datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
+    else:
+        datas = all2excel(start_date, end_date)
     data2excel(datas,ids)
     response = make_response(send_file("./static/{ids}.xlsx".format(ids=ids)))
     response.headers['Content-Disposition'] = "attachment;filename={}.xlsx".format(ids)
@@ -64,6 +67,24 @@ def data2excel(datas, ids):
         datas[0].to_excel(writer, '{i}'.format(i=datas[1]), encoding='gbk')
     finally:
         writer.save()
+
+def all2excel(start_date, end_date):
+    if not os.path.exists('./static'):
+        os.makedirs('./static')
+    writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))
+    main_export = Export()
+    datas, mzs = [], []
+    for fun in main_export.__dir__():
+        if '__' in fun:
+            continue
+        _datas = eval('''main_export.{}({},{},'')'''.format(fun,start_date,end_date))
+        try:
+            assert len(_datas[0]) == len(_datas[1])
+            datas.extend(_datas[0]); mzs.extend(_datas[1])
+        except:
+            datas.append(_datas[0]); mzs.append(_datas[1])
+    
+    return datas, mzs
 
 if __name__ == '__main__':
     if not os.path.exists('./log'):

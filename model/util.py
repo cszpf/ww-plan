@@ -6,6 +6,7 @@ import pandas as pd
 import util_yj as yj
 import util_lz as lz
 import util_lcs as lcs
+import mdpm as qq
 
 cwd = os.getcwd()
 
@@ -205,6 +206,10 @@ class Export:
     def qhz(self, start_date, end_date, dir_name):
         lcs_export = lcs.Export()
         return lcs_export.qhz(start_date, end_date, dir_name)
+
+    def mdpm(self, start_date, end_date, dir_name):
+        qq_export = qq.Export()
+        return qq_export.mdpm(start_date, end_date, dir_name)
 
 def main():
     export = Export()
