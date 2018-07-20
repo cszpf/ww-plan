@@ -197,16 +197,20 @@ class Export:
                     res2[_mer[0]][i] = _mer[1]
 
         #回头客
-        sql_wechat = '''(select user_id, count(*)as num1 from wechat_pay_log where state = 2 and type in (2,3) 
-        and create_time > '{}' and create_time < '{}' group by user_id)as userw'''.format(start_date, end_date)
-        sql_dc = '''(select user_id, count(*)as num2 from user_deposit_card as dc, user_deposit_card_log as dcl 
-        where dc.user_deposit_card_id=dcl.user_deposit_card_id and amount<0 and dcl.create_time > '{}' and 
-        dcl.create_time < '{}' group by user_id)as userd'''.format(start_date, end_date)
+        sql_wechat = '''(select user_id, count(*)as num1 from wechat_pay_log where state = 2 and type in (2,3)
+        and create_time > '{}' and create_time < '{}' group by user_id)as userw'''
+        sql_dc = '''(select user_id, count(*)as num2 from user_deposit_card as dc, user_deposit_card_log as dcl
+        where dc.user_deposit_card_id=dcl.user_deposit_card_id and amount<0 and dcl.create_time > '{}' and
+        dcl.create_time < '{}' group by user_id)as userd'''
         sql_userList = '''(select user_id, merchant_id from user, merchant where user.merchant_config_id=
         merchant.merchant_config_id)as userList'''
-        sql = '''select merchant_id, count(*) from {} left join {} on userList.user_id = userw.user_id left join {} 
-        on userList.user_id = userd.user_id where ifnull(userw.num1,0)+ifnull(userd.num2,0)>1 group by 
-        userList.merchant_id'''.format(sql_userList, sql_wechat, sql_dc)
+        sql_total_num = '''select * from(select userList.user_id, ifnull(userw.num1,0)+ifnull(userd.num2,0)as num, userList.merchant_id from
+        {} left join {} on userList.user_id = userw.user_id left join {} on userList.user_id = userd.user_id)as totalNum where num>0'''
+        sql_firstUsr = '''select user_id from ({})as firUsrList'''.format(
+            sql_total_num.format(sql_userList, sql_wechat.format('2016-1-1',start_date), sql_dc.format('2016-1-1',start_date)))
+        sql_CurrUsr = sql_total_num.format(sql_userList, sql_wechat.format(start_date, end_date), sql_dc.format(start_date, end_date))
+        sql_Usr = '''select user_id, if(user_id in ({}), num, num-1)as usr_num, merchant_id from ({})as curr'''.format(sql_firstUsr,sql_CurrUsr)
+        sql = '''select merchant_id, sum(usr_num) from ({})as usrNum group by merchant_id'''.format(sql_Usr)
         result3 = self.connect.query(self.connect.fenqi, sql)
         res3 = {}    #res是商户id映射到回头客数的词典
         for _mer in result3:
@@ -229,8 +233,8 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
-        # df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
-        return df, '商户用券详情'
+        df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
+        return all_data
 
     def qpm(self, start_date, end_date, dir_name):
         columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
@@ -298,14 +302,60 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
-        # df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
-        return df, '券排名'
+        df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
+        return all_data
+
+    def ydqxq(self, start_date, end_date, dir_name):
+        columns = ['日期', '名称', '商户', '标签', '领券量', '发放结束日期']
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        all_data1 = [];all_data2 = [];all_data3 = [];   #快到期、修改、下线
+        sql_coupons_num = '''select count(*) from coupons where create_time<'{}' and coupons_config_id='{}';'''
+        #快到期
+        for i in range((end_date-start_date).days):
+            curr_date = start_date + datetime.timedelta(i)  #不含当天,当天零时
+            sql_kdq = '''select name, merchant_id, coupons_config_id, publish_end_date from coupons_config 
+            where expire_date is not null and datediff(expire_date,'{}')=10'''.format(curr_date)
+            result = self.connect.query(self.connect.coupons, sql_kdq)
+            for x in range(len(result)):
+                curr_date2 = start_date + datetime.timedelta(i+1)   #含当天,次日零时
+                sql_kdq_num = sql_coupons_num.format(curr_date2, result[x][2])
+                get_num = self.connect.query(self.connect.coupons, sql_kdq_num)[0][0]
+                all_data1.append([curr_date.strftime("%y%m%d"), result[x][0], self.connect.mer_id2name(result[x][1]),
+                              self.connect.cou_cfg_id2label(result[x][2]), get_num, result[x][3].strftime("%y%m%d")])
+        #修改
+        sql_xg = '''select update_time, name, merchant_id, coupons_config_id, publish_end_date 
+        from coupons_config where update_time > '{}' and update_time < '{}';'''.format(start_date, end_date)
+        result = self.connect.query(self.connect.coupons, sql_xg)
+        for res in result:
+            sql_xg = sql_coupons_num.format(res[0], res[3])
+            get_num = self.connect.query(self.connect.coupons, sql_xg)[0][0]
+            all_data2.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
+                              self.connect.cou_cfg_id2label(res[3]),get_num, res[4].strftime("%y%m%d")])
+        #下线
+        sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config 
+        where publish_end_date>'{}' and publish_end_date<'{}';'''.format(start_date, end_date)
+        result = self.connect.query(self.connect.coupons, sql_xx)
+        for res in result:
+            sql_xx = sql_coupons_num.format(res[0], res[3])
+            get_num = self.connect.query(self.connect.coupons, sql_xx)[0][0]
+            all_data3.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
+                              self.connect.cou_cfg_id2label(res[3]), get_num, res[0].strftime("%y%m%d")])
+
+        all_data = [all_data1, all_data2, all_data3]
+        file = ['kuaidaoqi.csv', 'xiugai.csv', 'xiaxian.csv']
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+        for i in range(len(all_data)):
+            df = pd.DataFrame(all_data[i], columns=columns)
+            df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
+        return all_data
 
 def main():
     export = Export()
-    # export.mdls('2018-6-1','2018-6-3','./')
-    # export.shyq('2017-6-1','2018-7-16','./')
-    export.qpm('2017-6-1','2018-7-16','./')
+    # export.shyq('2018-1-1','2018-7-19','./')
+    # export.qpm('2017-6-1','2018-7-16','./')
+    export.ydqxq('2018-6-1', '2018-7-16', './')
 
 if __name__ == '__main__':
     main()
