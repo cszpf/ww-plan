@@ -225,13 +225,13 @@ class Export:
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
-        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
+        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,a.merchant_id,merchant_type 
         FROM subbranch a,merchant b 
         WHERE a.merchant_id=b.merchant_id """
         result = self.connect.query(self.connect.fenqi, sql)
         for _sub in result:
             if _sub:
-                data = []; 
+                data = []
                 sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
                 WHERE subbranch_id='{}' AND type IN (2,3) AND state = 2 GROUP BY create_time 
                 ORDER BY create_time """.format(_sub[0])
@@ -263,7 +263,7 @@ class Export:
                     else:
                         ifsilent = True
                     if ifsilent:
-                        merid = self.connect.subid2merid(_sub[0])
+                        merid = _sub[-2]
                         if not merid in merdict:
                             merdict[merid] = 0
                         merdict[merid] += 1
