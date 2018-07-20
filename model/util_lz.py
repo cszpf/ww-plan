@@ -38,21 +38,14 @@ class Connect:
             return result[0][0]
         return None
 
-    # 将门店ID映射成商户ID
-    def subid2merid(self, subid):
-        sql = """SELECT a.merchant_id FROM merchant a, subbranch b WHERE a.merchant_id = b.merchant_id AND b.subbranch_id = '{subid}'""".format(subid = subid)
-        result = self.query(self.fenqi, sql)
-        if result:
-            return result[0][0]
-        return None
 
-    #将商店ID映射成商户简称
-    def merid2shortname(self, merid):
-        sql = """SELECT merchant_id, short_name FROM merchant WHERE merchant_id = '{merid}'""".format(merid = merid)
-        result = self.query(self.fenqi, sql)
-        if result:
-            return result[0][1]
-        return None
+    # #将商店ID映射成商户简称
+    # def merid2shortname(self, merid):
+    #     sql = """SELECT merchant_id, short_name FROM merchant WHERE merchant_id = '{merid}'""".format(merid = merid)
+    #     result = self.query(self.fenqi, sql)
+    #     if result:
+    #         return result[0][1]
+    #     return None
 
 class Export:
     def __init__(self):
@@ -359,8 +352,8 @@ class Export:
             except:
                 accum_lszb = 0
             
-            aver_house_access_income = accum_assess_income/accum_sub
-            aver_house_yyls = accum_yyls/accum_sub
+            aver_house_access_income = round(float(accum_assess_income)/float(accum_sub),3)
+            aver_house_yyls = round(float(accum_yyls)/float(accum_sub),3)
             try:
                 aver_house_lszb = round(float(aver_house_yyls)/float(aver_house_access_income),3)
             except:
