@@ -39,13 +39,13 @@ class Connect:
         return None
 
 
-    # #将商店ID映射成商户简称
-    # def merid2shortname(self, merid):
-    #     sql = """SELECT merchant_id, short_name FROM merchant WHERE merchant_id = '{merid}'""".format(merid = merid)
-    #     result = self.query(self.fenqi, sql)
-    #     if result:
-    #         return result[0][1]
-    #     return None
+    #将商店ID映射成商户简称
+    def merid2shortname(self, merid):
+        sql = """SELECT merchant_id, short_name FROM merchant WHERE merchant_id = '{merid}'""".format(merid = merid)
+        result = self.query(self.fenqi, sql)
+        if result:
+            return result[0][1]
+        return None
 
 class Export:
     def __init__(self):
@@ -266,7 +266,7 @@ class Export:
                 WHERE a.merchant_id = b.merchant_id AND a.merchant_id = '{}'""".format(merid)
                 result3 = self.connect.query(self.connect.fenqi, sql3)
                 if(len(result3) == merdict[merid]):
-                    tempdata.append(merid)
+                    tempdata.append(self.connect.merid2shortname(merid))
             #后台优惠券全部下架的商户
             # for j in tempdata:
             #     sql4 = """SELECT merchant_id, subbranch_id
@@ -281,7 +281,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,index = indexs)
         df = df.stack().unstack(0)
-        # df.to_csv(os.path.join(dir_name,'lssh.csv'),index=False,encoding='gbk', sep=',')
+        #df.to_csv(os.path.join(dir_name,'lssh.csv'),index=False,encoding='gbk', sep=',')
         return df
 
     # 实现门店汇总表的在线生成
@@ -391,7 +391,7 @@ def main():
     #export.cmmd('2018-6-1', '2018-6-10', './')
     #export.hymd('2018-6-1','2018-6-10','./')
     #export.ydsh('2018-6-1','2018-6-10','./')
-    #export.lssh('2018-6-1','2018-6-10','./')
-    export.mdhz('2018-6-1','2018-6-10','./')
+    export.lssh('2018-6-1','2018-6-10','./')
+    #export.mdhz('2018-6-1','2018-6-10','./')
 if __name__ == '__main__':
     main()
