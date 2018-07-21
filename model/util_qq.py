@@ -150,8 +150,7 @@ class Export:
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
-        df.to_csv(os.path.join(dir_name, 'shqxq.csv'), index=False, encoding='gbk', sep=',')
-        return all_data
+        return df,'商户券详情'
 
     def mdpm(self, start_date, end_date, dir_name):
         indexs = []
@@ -306,7 +305,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,index=indexs)
         df = df.stack().unstack(0)
-        df.to_csv(os.path.join(dir_name, 'mdpm.csv'), index=False, encoding='gbk', sep=',')
+        return df, '门店排名'
 
 
 def main():
