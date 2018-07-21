@@ -214,7 +214,7 @@ class Export:
         if hycount <= 10:
             for i in range(hycount, 11):
                 hylie1.append('-')
-                hylie2.append('-')
+                hylie2.append('0')
         if totalamount:
             hyzb = round(hytopls / totalamount, 3)  # 流水占比
         else:
@@ -235,7 +235,7 @@ class Export:
         if lscount <= 10:
             for i in range(lscount, 11):
                 lslie1.append('-')
-                lslie2.append('-')
+                lslie2.append('0')
         if totalamount:
             lszb = round(lstopls / totalamount, 3)  # 流水占比
         else:
@@ -277,8 +277,8 @@ class Export:
         if yqcount <=10:
             for i in range(yqcount, 11):
                 yqlie1.append('-')
-                yqlie2.append('-')
-                yqlie3.append('-')
+                yqlie2.append('0')
+                yqlie3.append('0')
         if totalamount:
             zb3 = round(yqtopls / totalamount, 3)  # 流水占比
         else:
@@ -304,7 +304,7 @@ class Export:
         if kdjcount <=10:
             for i in range(kdjcount, 11):
                 kdjlie1.append('-')
-                kdjlie2.append('-')
+                kdjlie2.append('0')
         if totalamount:
             zb4 = round(kdjtopls / totalamount, 3)  # 流水占比
         else:
@@ -330,6 +330,6 @@ def main():
     export = Export()
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
     #export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
-    export.mdpm('2018-3-03', '2018-3-5', r'\Users\qiqi\Desktop')
+    export.mdpm('2017-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
