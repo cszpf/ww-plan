@@ -8,6 +8,7 @@ class Connect:
     def __init__(self):
         self.fenqi, self.coupons = 'fenqi', 'coupons'
         # 大学城数据库
+        #self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', '123456', 555
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
         self.ip2, self.user2, self.pwd2, self.port2 = '192.168.1.14', 'root', '123456', 8306
@@ -134,13 +135,18 @@ class Export:
                 countq=1
                 for bq,lq in bq_lq.items():
                     if bq:
-                        columns.append('券{0}标签'.format(countq))
-                        columns.append('券{0}领券数/用券数'.format(countq))
+                        label1='券{0}标签'.format(countq)
+                        label2='券{0}领券数/用券数'.format(countq)
+                        if label1 not in columns:
+                            columns.append('券{0}标签'.format(countq))
+                        if label2 not in columns:
+                            columns.append('券{0}领券数/用券数'.format(countq))
                         data.append(bq)
                         d=str(lq)+'/'+str(bq_yq.get(bq))
                         data.append(d)
                         countq=countq+1
-                all_data.append(data)
+                #print(data)
+            all_data.append(data)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
