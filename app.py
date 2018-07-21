@@ -15,16 +15,26 @@ jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystem
 app = Flask(__name__, static_url_path='',root_path='')
 _export = Export()
 
-@app.route('/', methods=['GET'])
-def signin_form():
+def write_log():
     app.logger.info('info log')
     app.logger.warning('warning log')
+
+@app.route('/', methods=['GET'])
+def signin_form():
+    write_log()
+    return render_template('sign-form.html')
+
+@app.route('/signin', methods=['GET'])
+def x():
+    return render_template('sign-form.html')
+    
+@app.route('//export', methods=['GET'])
+def x1():
     return render_template('sign-form.html')
 
 @app.route('/signin', methods=['POST'])
 def signin():
-    app.logger.info('info log')
-    app.logger.warning('warning log')
+    write_log()
     md5 = hashlib.md5()
     username = request.form['username']
     password = request.form['password']
@@ -39,8 +49,7 @@ def signin():
 
 @app.route('/export', methods=['POST'])
 def export():
-    app.logger.info('info log')
-    app.logger.warning('warning log')
+    write_log()
     start_date = request.form['start_date']
     end_date = request.form['end_date']
     ids = request.form['ids']
@@ -62,7 +71,10 @@ def data2excel(datas, ids):
     try:
         assert len(datas[0]) == len(datas[1])
         for df, i in zip(datas[0], datas[1]):
-            df.to_excel(writer, '{i}'.format(i=i), encoding='gbk', index=False)
+            if i == '门店汇总':
+                df.to_excel(writer, '{i}'.format(i=i), encoding='gbk')
+            else:    
+                df.to_excel(writer, '{i}'.format(i=i), encoding='gbk', index=False)
     except:
         datas[0].to_excel(writer, '{i}'.format(i=datas[1]), encoding='gbk', index=False)
     finally:
