@@ -72,7 +72,7 @@ def all2excel(start_date, end_date):
     main_export = Export()
     datas, mzs = [], []
     for fun in main_export.__dir__():
-        if '__' in fun:
+        if '__' in fun or 'connect' in fun:
             continue
         _datas = eval('''main_export.{}('{}','{}','./static')'''.format(fun,start_date,end_date))
         try:
