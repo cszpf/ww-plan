@@ -7,6 +7,7 @@ cwd = os.getcwd()
 class Connect:
     def __init__(self):
         self.fenqi, self.coupons = 'fenqi', 'coupons'
+        # self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', '123456', 555
         # 大学城数据库
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
@@ -127,7 +128,7 @@ class Export:
                          self.connect.region_code2name(mer[2]) if mer[2]!=None and mer[2]!=''else '-',
                          mer[3], mer[4] if mer[4]!=None and mer[4]!=''else '-', mer[5]if mer[5]!=None and mer[5]!=''else '-']
 
-        # 计算商户流水、消费笔数、客单价、办卡数、办卡金额
+        # 计算商户流水、消费笔数、客单价(分别计算微信消费记录、储值卡消费记录)
         sql_wechat = '''(select merchant_id, sum(amount)as sum1, count(*)as num1 from merchant, wechat_pay_log as wpl, user
         where merchant.merchant_config_id = user.merchant_config_id and user.user_id = wpl.user_id and wpl.state = 2 
         and wpl.type in (2,3) and wpl.create_time > '{}' and wpl.create_time < '{}' group by merchant_id)
@@ -135,29 +136,38 @@ class Export:
         sql_dc = '''(select merchant_id, sum(abs(amount))as sum2, count(*)as num2 from user_deposit_card as dc, 
         user_deposit_card_log as dcl where dc.user_deposit_card_id = dcl.user_deposit_card_id and amount < 0 and 
         dcl.create_time > '{}' and dcl.create_time < '{}' group by merchant_id)as pay2'''.format(start_date, end_date)
-        sql_recharge = '''(select merchant_id, sum(amount)as recharge_total, count(*)as recharge_num from user_deposit_card as dc, 
-        user_deposit_card_log as dcl where dc.user_deposit_card_id = dcl.user_deposit_card_id and amount > 0 and 
-        dcl.create_time > '{}' and dcl.create_time < '{}' group by merchant_id)as recharge'''.format(start_date, end_date)
         sql_mer = '''(select merchant.merchant_id,merchant.short_name from subbranch, merchant 
         where subbranch.merchant_id=merchant.merchant_id and sub_type=1)as merList'''
+        #办卡数、办卡金额（分别计算一次充和分期充）
+        sql_onepay = '''select sum(amount)as sum1, count(*)as num1, merchant_id from wechat_pay_log wl, user, merchant where wl.state=2 
+        and wl.type=1 and user.merchant_config_id=merchant.merchant_config_id and wl.user_id=user.user_id and wl.create_time>'{}' 
+        and wl.create_time<'{}' group by merchant_id'''.format(start_date, end_date)
+        sql_fenqi = '''select sum(expect_principal)as sum2, sum(if(r.current_term=1, 1, 0))as num2, merchant_id from user_deposit_card dc, 
+        repayment r where dc.instalment_apply_id=r.apply_id and r.state=2 and r.actual_repayment_time>'{}' and r.actual_repayment_time<'{}' 
+        group by dc.merchant_id'''.format(start_date, end_date)
+        sql_recharge = '''(select merList.merchant_id,(ifnull(sum1,0)+ifnull(sum2,0))as recharge_total, (ifnull(num1,0)+ifnull(num2,0))
+        as recharge_num from {} left join ({})as onepay on merList.merchant_id=onepay.merchant_id left join ({})as fenqi on 
+        merList.merchant_id=fenqi.merchant_id)as recharge'''.format(sql_mer, sql_onepay, sql_fenqi)
+        #汇总这五个数据，外加商户简称
         sql1 = '''select merList.merchant_id, short_name, (ifnull(sum1,0)+ifnull(sum2,0))as amount,(ifnull(num1,0)+ifnull(num2,0))as num,  
-        ifnull(recharge_num,0), ifnull(recharge_total,0) from {} left join {} on merList.merchant_id=pay1.merchant_id left join {} on merList.merchant_id=
+        recharge_num, recharge_total from {} left join {} on merList.merchant_id=pay1.merchant_id left join {} on merList.merchant_id=
         pay2.merchant_id left join {} on merList.merchant_id=recharge.merchant_id'''.format(sql_mer, sql_wechat, sql_dc, sql_recharge)
         result1 = self.connect.query(self.connect.fenqi, sql1)
-        mer = []    #mer是merchant_id的list
-        res1 = {}
+        # mer是merchant_id的list
+        mer = [];   res1 = {}
         for _mer in result1:
             mer.append(_mer[0])
-            res1[_mer[0]] = [_mer[1],_mer[2],_mer[3],_mer[2]/_mer[3] if _mer[3]!=0 else 0, _mer[4], _mer[5]]
+            res1[_mer[0]] = [_mer[1],_mer[2],_mer[3],round(_mer[2]/_mer[3],2) if _mer[3]!=0 else round(0,2), _mer[4], _mer[5]]
             #res1词典的key为merchant_id, value为 列表[商户简称、商户流水、消费笔数、客单价、办卡数、办卡金额]
 
-        # 关注券、促活券、邻店券统计
+        # 关注券GZ、促活券CH、邻店券LD统计
         GZ = '145556';CH = '145558'
         sql_coupons = '''select merchant_id, count(*)as num from coupons, coupons_cfg_label_rela as cl, coupons_config 
         where coupons.coupons_config_id=cl.coupons_config_id and coupons.coupons_config_id=coupons_config.coupons_config_id 
         and label_id = '{}' and coupons.create_time > '{}' and coupons.create_time < '{}' {} group by merchant_id;'''
         sql_launch = '''select merchant_id, count(*) from coupons_config, coupons_cfg_label_rela as cl where 
                 coupons_config.coupons_config_id=cl.coupons_config_id and label_id='{}' and coupons_config.status=2 group by merchant_id;'''
+        # get → 领券量；    use → 用券量；  launch → 上架种类数； avg → 客单价
         sql_GZ_get = sql_coupons.format(GZ, start_date, end_date, '')
         sql_GZ_use = sql_coupons.format(GZ, start_date, end_date, 'and coupons.status=1')
         sql_GZ_launch = sql_launch.format(GZ)
@@ -166,21 +176,20 @@ class Export:
         sql_CH_use = sql_coupons.format(CH, start_date, end_date, 'and coupons.status=1')
         sql_CH_launch = sql_launch.format(CH)
         sql_CH_avg = self.connect.coupons_avg(CH, start_date, end_date)
-
-        #邻店帮我
+        #邻店帮我发的券的统计
         LD_help = '''select merchant_id,count(*)as num from coupons, coupons_config where 
         coupons.coupons_config_id=coupons_config.coupons_config_id and coupons.{time}>'{start_time}' 
         and coupons.{time}<'{end_time}' and coupons.coupons_promote_id is not null group by merchant_id'''
         LD_help_get = LD_help.format(time='create_time', start_time=start_date, end_time=end_date)
         LD_help_use = LD_help.format(time='used_time', start_time=start_date, end_time=end_date)
         LD_help_avg = self.connect.getSQL_LD_avg(start_date, end_date)
-        #我帮邻店
+        #我帮邻店发的券的统计
         help_LD = '''select merchant_id,count(*)as num from coupons, coupons_promote where 
         coupons.coupons_promote_id=coupons_promote.coupons_promote_id and coupons.{time}>'{start_time}' 
         and coupons.{time}<'{end_time}' group by merchant_id'''
         help_LD_get = help_LD.format(time='create_time', start_time=start_date, end_time=end_date)
         help_LD_use = help_LD.format(time='used_time', start_time=start_date, end_time=end_date)
-
+        #汇总关注、促活、邻店券
         result2 = [self.connect.query(self.connect.coupons, sql_GZ_get), self.connect.query(self.connect.coupons, sql_GZ_use),
                    self.connect.query(self.connect.coupons, sql_GZ_launch), self.connect.query('',sql_GZ_avg),
                    self.connect.query(self.connect.coupons, sql_CH_get), self.connect.query(self.connect.coupons, sql_CH_use),
@@ -218,18 +227,18 @@ class Export:
 
         for mID in mer:
             _data = []
-            _data.append(res1[mID][0])
-            _data.extend(res0[mID][0:5] if mID in res0 else ['-','-','-','-','-'])
-            _data.extend(res1[mID][1:4])
-            _data.extend(res2[mID][0:4])
-            _data.append(res2[mID][1]/res2[mID][0] if res2[mID][0]>0 else 0)
-            _data.extend(res2[mID][4:8])
-            _data.append(res2[mID][5]/res2[mID][4] if res2[mID][4]>0 else 0)
-            _data.extend(res2[mID][8:13])
-            _data.append(res3.get(mID, 0))
-            _data.extend(res1[mID][4:6])
+            _data.append(res1[mID][0])  #商户简称
+            _data.extend(res0[mID][0:5] if mID in res0 else ['-','-','-','-','-'])  #行政区、微区域、行业、销售姓名、运营姓名
+            _data.extend(res1[mID][1:4])    #商户流水、消费笔数、客单价
+            _data.extend(res2[mID][0:4])    #关注券
+            _data.append(round(res2[mID][1]/res2[mID][0],2) if res2[mID][0]>0 else round(0,2))
+            _data.extend(res2[mID][4:8])    #促活券
+            _data.append(round(res2[mID][5]/res2[mID][4],2) if res2[mID][4]>0 else round(0,2))
+            _data.extend([res2[mID][8], round(res2[mID][9],2)])   #邻店券
+            _data.extend(res2[mID][10:13])
+            _data.append(res3.get(mID, 0))  #回头客
+            _data.extend(res1[mID][4:6])    #办卡数、办卡金额
             all_data.append(_data)
-        # print(all_data)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,columns=columns)
@@ -256,7 +265,7 @@ class Export:
         result_GZ2 = self.connect.query('', sql_GZ_avg)
         GZ_avg = {}
         for m in result_GZ2:
-            GZ_avg[m[0]]=m[1]
+            GZ_avg[m[0]]=round(m[1], 2)
         # 促活券
         sql_CH = sql_coupons.format(CH, start_date, end_date)
         result_CH1 = self.connect.query(self.connect.coupons, sql_CH)
@@ -264,7 +273,7 @@ class Export:
         result_CH2 = self.connect.query('', sql_CH_avg)
         CH_avg = {}
         for m in result_CH2:
-            CH_avg[m[0]]=m[1]
+            CH_avg[m[0]]=round(m[1], 2)
         # 邻店券
         sql_LD = '''select cc.name,count(*)as num, merchant_id, cc.coupons_config_id from coupons, coupons_config cc where 
         coupons.coupons_config_id=cc.coupons_config_id and coupons.status=1 and coupons.used_time>'{}' and coupons.used_time<'{}' 
@@ -274,7 +283,7 @@ class Export:
         result_LD2 = self.connect.query('', sql_LD_avg)
         LD_avg = {}
         for m in result_LD2:
-            LD_avg[m[0]]=m[1]
+            LD_avg[m[0]]=round(m[1], 2)
 
         for i in range(10):
             _data = []
@@ -286,14 +295,14 @@ class Export:
             else:
                 _data.extend(['-', '-', '-', '-', '-'])
             if i < len(result_CH1):
-                _data.extend(result_GZ1[i][0:2])
+                _data.extend(result_CH1[i][0:2])
                 _data.extend([self.connect.mer_id2name(result_CH1[i][2]), self.connect.cou_cfg_id2label(result_CH1[i][-1]),
                               GZ_avg[result_CH1[i][2]]])
             else:
                 _data.extend(['-', '-', '-', '-', '-'])
             if i < len(result_LD1):
                 _data.extend(result_LD1[i][0:2])
-                _data.extend([self.connect.mer_id2name(result_LD1[i][2]), self.connect.get_LD(result_LD1[i][-1]),
+                _data.extend([self.connect.get_LD(result_LD1[i][-1]), self.connect.mer_id2name(result_LD1[i][2]),
                               self.connect.cou_cfg_id2label(result_LD1[i][-1]), LD_avg[result_LD1[i][2]]])
             else:
                 _data.extend(['-', '-', '-', '-', '-', '-'])
@@ -354,9 +363,9 @@ class Export:
 
 def main():
     export = Export()
-    # export.shyq('2018-1-1','2018-7-19','./')
-    # export.qpm('2017-6-1','2018-7-16','./')
-    export.ydqxq('2018-6-1', '2018-7-16', './')
+    export.shyq('2018-6-20','2018-7-21','./')
+    # export.qpm('2018-7-1','2018-7-21','./')
+    # export.ydqxq('2018-6-1', '2018-7-16', './')
 
 if __name__ == '__main__':
     main()
