@@ -215,7 +215,10 @@ class Export:
             for i in range(hycount, 11):
                 hylie1.append('-')
                 hylie2.append('-')
-        hyzb = round(hytopls / totalamount, 3)  # 流水占比
+        if totalamount:
+            hyzb = round(hytopls / totalamount, 3)  # 流水占比
+        else:
+            hyzb = 0
         hylie1.append(hyzb)
         all_data.append(hylie1)
         all_data.append(hylie2)
@@ -233,7 +236,10 @@ class Export:
             for i in range(lscount, 11):
                 lslie1.append('-')
                 lslie2.append('-')
-        lszb = round(lstopls / totalamount, 3)  # 流水占比
+        if totalamount:
+            lszb = round(lstopls / totalamount, 3)  # 流水占比
+        else:
+            lszb=0
         lslie1.append(lszb)
         all_data.append(lslie1)
         all_data.append(lslie2)
@@ -273,7 +279,10 @@ class Export:
                 yqlie1.append('-')
                 yqlie2.append('-')
                 yqlie3.append('-')
-        zb3 = round(yqtopls / totalamount, 3)  # 流水占比
+        if totalamount:
+            zb3 = round(yqtopls / totalamount, 3)  # 流水占比
+        else:
+            zb3=0
         yqlie1.append(zb3)
         all_data.append(yqlie1)
         all_data.append(yqlie2)
@@ -283,7 +292,7 @@ class Export:
         kdj = {}  # 用来存每个门店的名称和客单价
         for name,amount in d1.items():
             if amount:
-                kdj.update({name: round(d1.get(name, 0) / d1count.get(name), 2)})  # 保留两位小数
+                kdj.update({name: round(d1.get(name, 0) / d1count.get(name), 3)})  # 保留两位小数
         kdj1 = sorted(kdj.items(), key=lambda item: item[1], reverse=True)
         kdjlie1=[];kdjlie2=[];kdjcount=1;kdjtopls=0
         for i in kdj1:
@@ -296,7 +305,10 @@ class Export:
             for i in range(kdjcount, 11):
                 kdjlie1.append('-')
                 kdjlie2.append('-')
-        zb4 = round(kdjtopls / totalamount, 3)  # 流水占比
+        if totalamount:
+            zb4 = round(kdjtopls / totalamount, 3)  # 流水占比
+        else:
+            zb4=0
         kdjlie1.append(zb4)
         all_data.append(kdjlie1)
         all_data.append(kdjlie2)
@@ -307,11 +319,17 @@ class Export:
         df = df.stack().unstack(0)
         return df, '门店排名'
 
+        # if not os.path.exists(dir_name):
+        #     os.makedirs(dir_name)
+        # df = pd.DataFrame(all_data, index=indexs)
+        # df = df.stack().unstack(0)
+        # df.to_csv(os.path.join(dir_name, 'mdpm.csv'), index=False, encoding='gbk', sep=',')
+
 
 def main():
     export = Export()
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
-    export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
-    #export.mdpm('2018-1-03', '2018-7-30', r'\Users\qiqi\Desktop')
+    #export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
+    export.mdpm('2018-3-03', '2018-3-5', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
