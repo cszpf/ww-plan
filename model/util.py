@@ -18,7 +18,7 @@ def concat(df, n):
     '''
     x = pd.DataFrame(columns=df.columns)
     temp = ['汇总']
-    temp.extend([None for i in range(n-1)])
+    temp.extend(['-' for i in range(n-1)])
     x[df.columns[n:]] = pd.DataFrame(df[df.columns[n:]].sum()).T
     x[df.columns[:n]] = temp
     return pd.concat([df, x], ignore_index=True)

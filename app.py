@@ -27,8 +27,8 @@ def signin_form():
 @app.route('/signin', methods=['GET'])
 def x():
     return render_template('sign-form.html')
-    
-@app.route('//export', methods=['GET'])
+
+@app.route('/export', methods=['GET'])
 def x1():
     return render_template('sign-form.html')
 
@@ -53,7 +53,7 @@ def export():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
     ids = request.form['ids']
-    if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>datetime.date.today():
+    if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>(datetime.date.today()+datetime.timedelta(1)):
         return render_template('table-export.html', start_date=start_date, end_date=end_date)
     if ids != 'all':
         datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
