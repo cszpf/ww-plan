@@ -2,6 +2,7 @@ import MySQLdb
 import datetime
 import os
 import pandas as pd
+from decimal import Decimal
 cwd = os.getcwd()
 
 class Connect:
@@ -157,7 +158,7 @@ class Export:
         mer = [];   res1 = {}
         for _mer in result1:
             mer.append(_mer[0])
-            res1[_mer[0]] = [_mer[1],_mer[2],_mer[3],round(_mer[2]/_mer[3],2) if _mer[3]!=0 else round(0,2), _mer[4], _mer[5]]
+            res1[_mer[0]] = [_mer[1],_mer[2],_mer[3],Decimal(_mer[2]/_mer[3]).quantize(Decimal("0.00")) if _mer[3]!=0 else Decimal("0.00"), int(_mer[4]), _mer[5]]
             #res1词典的key为merchant_id, value为 列表[商户简称、商户流水、消费笔数、客单价、办卡数、办卡金额]
 
         # 关注券GZ、促活券CH、邻店券LD统计
@@ -203,7 +204,10 @@ class Export:
                 for _mer in result2[i]:
                     if _mer[0] not in res2:
                         res2[_mer[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                    res2[_mer[0]][i] = _mer[1]
+                    if i == 3 or i ==7 or i == 9:
+                        res2[_mer[0]][i] = round(_mer[1], 2)
+                    else:
+                        res2[_mer[0]][i] = _mer[1]
 
         #回头客
         sql_wechat = '''(select user_id, count(*)as num1 from wechat_pay_log where state = 2 and type in (2,3)
@@ -223,7 +227,7 @@ class Export:
         result3 = self.connect.query(self.connect.fenqi, sql)
         res3 = {}    #res是商户id映射到回头客数的词典
         for _mer in result3:
-            res3[_mer[0]] = _mer[1]
+            res3[_mer[0]] = int(_mer[1])
 
         for mID in mer:
             _data = []
@@ -231,13 +235,11 @@ class Export:
             _data.extend(res0[mID][0:5] if mID in res0 else ['-','-','-','-','-'])  #行政区、微区域、行业、销售姓名、运营姓名
             _data.extend(res1[mID][1:4])    #商户流水、消费笔数、客单价
             _data.extend(res2[mID][0:4])    #关注券
-            _data.append(round(res2[mID][1]/res2[mID][0],2) if res2[mID][0]>0 else round(0,2))
+            _data.append('%.1f%%' % (res2[mID][1] / res2[mID][0] * 100) if res2[mID][0] > 0 else '0.0%')
             _data.extend(res2[mID][4:8])    #促活券
-            _data.append(round(res2[mID][5]/res2[mID][4],2) if res2[mID][4]>0 else round(0,2))
-            _data.extend([res2[mID][8], round(res2[mID][9],2)])   #邻店券
-            _data.extend(res2[mID][10:13])
-            _data.append(res3.get(mID, 0))  #回头客
-            _data.extend(res1[mID][4:6])    #办卡数、办卡金额
+            _data.append('%.1f%%' % (res2[mID][5] / res2[mID][4] * 100) if res2[mID][4] > 0 else '0.0%')
+            _data.extend(res2[mID][8:13])   #邻店券
+            _data.extend([res3.get(mID, 0), res1[mID][4], res1[mID][5]])  #回头客、办卡数、办卡金额
             all_data.append(_data)
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
