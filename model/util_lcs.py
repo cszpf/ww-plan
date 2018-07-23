@@ -333,35 +333,35 @@ class Export:
         WHERE a.coupons_config_id=b.coupons_config_id AND a.coupons_config_id=c.coupons_config_id AND c.label_id=d.label_id"""
         result = self.connect.query(self.connect.coupons, sql1)
         #print(result)
-        #领卷数
+        #领券数
         _data = []
         used_data=[]
         out_time_data=[]
         downline_data=[]
         modify_data=[]
         expire_data=[]
-        #关注卷
+        #关注券
         add_attention_data=[]
         attention_data=[]
         used_attention_data=[]
         attention_rate=[]
         expire_attention_data=[]
-        #促活卷
+        #促活券
         add_promote_data=[]
         promote_data=[]
         used_promote_data=[]
         expire_promote_data=[]
-        #邻店卷
+        #邻店券
         add_neighbor_data=[]
         neighbor_data=[]
         used_neighbor_data=[]
         expire_neighbor_data=[]
-        #基础卷
+        #基础券
         add_basis_data=[]
         basis_data=[]
         used_basis_data=[]
         expire_basis_data=[]
-        #场景卷
+        #场景券
         add_scene_data=[]
         scene_data=[]
         used_scene_data=[]
@@ -373,27 +373,27 @@ class Export:
         downline_data.extend(['下线券数','-', '-', '-', '-'])
         modify_data.extend(['修改券数','-', '-', '-', '-'])
         expire_data.extend(['快到期券数','-', '-', '-', '-'])
-        add_attention_data.extend(['新增关注卷数','-', '-', '-', '-'])
-        attention_data.extend(['关注卷领卷数','-', '-', '-', '-'])
-        used_attention_data.extend(['关注卷用卷数', '-', '-', '-', '-'])
-        attention_rate.extend(['关注卷用卷率', '-', '-', '-', '-'])
-        expire_attention_data.extend(['关注卷失效数', '-', '-', '-', '-'])
-        add_promote_data.extend(['新增促活卷数','-', '-', '-', '-'])
-        promote_data.extend(['促活卷领卷数','-', '-', '-', '-'])
-        used_promote_data.extend(['促活卷用卷数', '-', '-', '-', '-'])
-        expire_promote_data.extend(['促活卷失效数', '-', '-', '-', '-'])
-        add_neighbor_data.extend(['新增邻店卷数','-', '-', '-', '-'])
-        neighbor_data.extend(['邻店卷领卷数','-', '-', '-', '-'])
-        used_neighbor_data.extend(['邻店卷用卷数', '-', '-', '-', '-'])
-        expire_neighbor_data.extend(['邻店卷失效数', '-', '-', '-', '-'])
-        add_basis_data.extend(['新增基础卷数','-', '-', '-', '-'])
-        basis_data.extend(['基础卷领卷数','-', '-', '-', '-'])
-        used_basis_data.extend(['基础卷用卷数', '-', '-', '-', '-'])
-        expire_basis_data.extend(['基础卷失效数', '-', '-', '-', '-'])
-        add_scene_data.extend(['新增场景卷数','-', '-', '-', '-'])
-        scene_data.extend(['场景卷领卷数','-', '-', '-', '-'])
-        used_scene_data.extend(['场景卷用卷数', '-', '-', '-', '-'])
-        expire_scene_data.extend(['场景卷失效数', '-', '-', '-', '-'])
+        add_attention_data.extend(['新增关注券数','-', '-', '-', '-'])
+        attention_data.extend(['关注券领券数','-', '-', '-', '-'])
+        used_attention_data.extend(['关注券用券数', '-', '-', '-', '-'])
+        attention_rate.extend(['关注券用券率', '-', '-', '-', '-'])
+        expire_attention_data.extend(['关注券失效数', '-', '-', '-', '-'])
+        add_promote_data.extend(['新增促活券数','-', '-', '-', '-'])
+        promote_data.extend(['促活券领券数','-', '-', '-', '-'])
+        used_promote_data.extend(['促活券用券数', '-', '-', '-', '-'])
+        expire_promote_data.extend(['促活券失效数', '-', '-', '-', '-'])
+        add_neighbor_data.extend(['新增邻店券数','-', '-', '-', '-'])
+        neighbor_data.extend(['邻店券领券数','-', '-', '-', '-'])
+        used_neighbor_data.extend(['邻店券用券数', '-', '-', '-', '-'])
+        expire_neighbor_data.extend(['邻店券失效数', '-', '-', '-', '-'])
+        add_basis_data.extend(['新增基础券数','-', '-', '-', '-'])
+        basis_data.extend(['基础券领券数','-', '-', '-', '-'])
+        used_basis_data.extend(['基础券用券数', '-', '-', '-', '-'])
+        expire_basis_data.extend(['基础券失效数', '-', '-', '-', '-'])
+        add_scene_data.extend(['新增场景券数','-', '-', '-', '-'])
+        scene_data.extend(['场景券领券数','-', '-', '-', '-'])
+        used_scene_data.extend(['场景券用券数', '-', '-', '-', '-'])
+        expire_scene_data.extend(['场景券失效数', '-', '-', '-', '-'])
 
 
         for i in range((end_date - start_date).days):
