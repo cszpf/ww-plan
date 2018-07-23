@@ -147,6 +147,7 @@ class Export:
                         countq=countq+1
                 #print(data)
             all_data.append(data)
+
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
@@ -219,7 +220,8 @@ class Export:
             hyzb = round(hytopls / totalamount, 3)  # 流水占比
         else:
             hyzb = 0
-        hylie1.append(hyzb)
+        hyzb=hyzb*100
+        hylie1.append(str(hyzb)+'%')
         all_data.append(hylie1)
         all_data.append(hylie2)
 
@@ -240,7 +242,8 @@ class Export:
             lszb = round(lstopls / totalamount, 3)  # 流水占比
         else:
             lszb=0
-        lslie1.append(lszb)
+        lszb=lszb*100
+        lslie1.append(str(lszb)+'%')
         all_data.append(lslie1)
         all_data.append(lslie2)
 
@@ -283,7 +286,8 @@ class Export:
             zb3 = round(yqtopls / totalamount, 3)  # 流水占比
         else:
             zb3=0
-        yqlie1.append(zb3)
+        zb3=zb3*100
+        yqlie1.append(str(zb3)+'%')
         all_data.append(yqlie1)
         all_data.append(yqlie2)
         all_data.append(yqlie3)
@@ -309,7 +313,8 @@ class Export:
             zb4 = round(kdjtopls / totalamount, 3)  # 流水占比
         else:
             zb4=0
-        kdjlie1.append(zb4)
+        zb4=zb4*100
+        kdjlie1.append(str(zb4)+'%')
         all_data.append(kdjlie1)
         all_data.append(kdjlie2)
 
@@ -330,6 +335,6 @@ def main():
     export = Export()
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
     #export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
-    export.mdpm('2017-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
+    export.mdpm('2016-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
