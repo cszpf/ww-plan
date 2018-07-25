@@ -441,7 +441,7 @@ class Export:
                         count_expire+=1
                     if _sub[4]==3:
                         count_downline+=1
-                    if _sub[5]:
+                    if _sub[5].date()<=x:
                         count_modify+=1
                     #关注券
                 if _sub[3].date() == x:
