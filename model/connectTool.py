@@ -1,3 +1,4 @@
+import MySQLdb
 class connect:
     def __init__(self):
         self.fenqi, self.coupons = 'fenqi', 'coupons'
