@@ -20,6 +20,7 @@
  
 2. 在uwsgi中需安装python插件,并新建uwsgi.ini配置文件，需要加入python包的地址
   - sudo apt-get install uwsgi_plugin_python3 
+3. 更改数据库连接方式时，只需更改model/connectTool.py文件；另外系统默认采用debug模式，部署到生产环境中时需将debug模式置为False
 
 # 开发声明
 1. 详见之前微信群里发的压缩包中的需求说明文档
