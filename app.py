@@ -104,4 +104,3 @@ if __name__ == '__main__':
     handler.setFormatter(logging_format)
     app.logger.addHandler(handler)
     app.run(host='0.0.0.0', port='5000', debug=True)
-    
