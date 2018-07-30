@@ -12,6 +12,7 @@ log
 model/*.csv
 model/__*
 *.xlsx
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
