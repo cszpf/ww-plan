@@ -480,7 +480,8 @@ class Export:
                     if _sub[6] == label_field[8]:
                        count_add_scene += 1
                 if count_used_attention!=0:
-                    count_attention_rate=count_attention/count_used_attention
+                    count_attention_rate=count_used_attention/count_attention
+                    count_attention_rate = format(count_attention_rate, '.1%')
                 else:
                     count_attention_rate='-'
             #print(count_add_scene)
