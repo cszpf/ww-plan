@@ -1,0 +1,13 @@
+ALTER TABLE coupons ADD INDEX coupons_id (coupons_id,coupons_config_id);
+ALTER TABLE coupons_log ADD INDEX coupons_id (coupons_id,user_deposit_card_log_id,wechat_cashier_id);
+ALTER TABLE coupons_cfg_label_rela ADD INDEX coupons_config_id (coupons_config_id,label_id);
+ALTER TABLE labels ADD INDEX label_id (label_id);
+ALTER TABLE `coupons`.`coupons_config`  ADD UNIQUE INDEX `uni_coupons_config`(`coupons_config_id`) USING BTREE;
+ALTER TABLE `coupons`.`coupons_config` ADD INDEX `inx_coupons_config`(`merchant_id`) USING BTREE;
+CREATE INDEX couponsconfig_merchantid ON coupons_config(merchant_id);
+CREATE INDEX couponscfglabelrela_couponsconfigid ON coupons_cfg_label_rela(coupons_config_id);
+CREATE INDEX labels_labelid ON labels(label_id);
+CREATE index couponscfglabelrela_labelid on coupons_cfg_label_rela(label_id);
+CREATE index couponsconfigid_createtime on coupons(coupons_config_id,create_time);
+CREATE index couponsconfigid_createtime_status on coupons(coupons_config_id,create_time,status);
+CREATE index couponslog_userdepositcardlogid_createtime on coupons_log(user_deposit_card_log_id,create_time);
