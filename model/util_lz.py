@@ -139,7 +139,8 @@ class Export:
                         for _,__ in data:
                             datelist.append(__.date())
                         max_date = max(datelist)
-                        len_date = len(set(datelist))
+                        _datelist = list(set(datelist))
+                        len_date = len([_ for _ in _datelist if (end_date - _).days<=30 and (end_date - _).days>0])
                         ifactive = True if len_date >= (16 if (x-sxrq).days >= 30 else (x-sxrq).days//2 + 1) else False
                     else:
                         ifactive = False
@@ -150,7 +151,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,index = indexs)
         df = df.stack().unstack(0)
-        # df.to_csv(os.path.join(dir_name,'hymd.csv'),index=False,encoding='gbk', sep=',')
+        #df.to_csv(os.path.join(dir_name,'hymd.csv'),index=False,encoding='gbk', sep=',')
         return df
 
     # 实现异动商户表的在线生成
@@ -376,9 +377,9 @@ def main():
     #export.mdls('2018-6-19','2018-6-30','./')
     #export.mdlszb('2018-6-1','2018-6-4','./')
     #export.cmmd('2018-6-1', '2018-6-10', './')
-    #export.hymd('2018-6-1','2018-6-10','./')
+    #export.hymd('2018-6-1','2018-6-5','./')
     #export.ydsh('2018-6-1','2018-6-10','./')
-    export.lssh('2018-6-1','2018-6-10','./')
+    #export.lssh('2018-6-1','2018-6-10','./')
     #export.mdhz('2018-6-1','2018-6-10','./')
 if __name__ == '__main__':
     main()
