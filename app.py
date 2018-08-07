@@ -8,8 +8,8 @@ import datetime
 sys.path.append('./model')
 from util import Export
 import pandas as pd
-
 cwd = os.getcwd()
+
 jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
     os.path.join(cwd, 'templates')))
 app = Flask(__name__, static_url_path='',root_path='')
@@ -55,6 +55,7 @@ def export():
     ids = request.form['ids']
     if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>(datetime.date.today()+datetime.timedelta(1)):
         return render_template('table-export.html', start_date=start_date, end_date=end_date)
+    os.chdir('model')
     if ids != 'all':
         datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
     else:
@@ -65,6 +66,7 @@ def export():
     return response
 
 def data2excel(datas, ids):
+    os.chdir(cwd)
     if not os.path.exists('./static'):
         os.makedirs('./static')
     writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))

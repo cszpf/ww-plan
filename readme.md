@@ -14,6 +14,9 @@
   - pip install pandas
 5. install tqdm
   - pip install tqdm
+6. install Selenium
+  - pip install selenium
+  - phantomjs可以在http://phantomjs.org直接下载，解压就可以用了
 
 # 文件夹说明
 1. sql文件夹下存放的是MySQL数据表的一些索引创建文件

@@ -8,7 +8,7 @@ import util_lz as lz
 import util_lcs as lcs
 import util_qq as qq
 import connectTool
-cwd = os.getcwd()
+import click
 
 def concat(df, n):
     '''
@@ -201,6 +201,17 @@ class Export:
     def shqxq(self, start_date, end_date, dir_name):
         qq_export = qq.Export()
         return qq_export.shqxq(start_date,end_date,dir_name)
+
+    def djl(self, start_date, end_date, dir_name=''):
+        path = '../static/click'
+        df1 = pd.read_csv(os.path.join(path,'click.csv'), encoding='gbk')
+        if end_date > df1.columns[-1]:
+            df2 = click.preData(df1.columns[-1],end_date).drop(df1.columns[-1],axis=1)
+            df1 = pd.merge(df1,df2,on='受访页面',how='outer', copy=False).fillna(0)
+            click.write_csv(df1)
+        option = ['受访页面']
+        option.extend(df1.columns[1:][[i<=end_date and i>=start_date for i in df1.columns[1:]]])
+        return df1[option], '点击量'
 
 def main():
     export = Export()
