@@ -224,8 +224,7 @@ class Export:
             _data.extend(res2[mID][8:13])   #邻店券
             _data.extend([res3.get(mID, 0), res1[mID][4], res1[mID][5]])  #回头客、办卡数、办卡金额
             all_data.append(_data)
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
+        
         df = pd.DataFrame(all_data,columns=columns)
         # df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
         return df, '商户用券详情'
@@ -293,8 +292,6 @@ class Export:
                 _data.extend(['-', '-', '-', '-', '-', '-'])
             all_data.append(_data)
             # print(all_data)
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
         # df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
         return df, '券排名'
@@ -338,8 +335,6 @@ class Export:
 
         all_data = [all_data1, all_data2, all_data3];   all_df = []
         file = ['快到期券详情', '修改券详情', '下线券详情']
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
         for d in all_data:
             df = pd.DataFrame(d, columns=columns)
             all_df.append(df)

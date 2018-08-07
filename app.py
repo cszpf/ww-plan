@@ -55,9 +55,8 @@ def export():
     ids = request.form['ids']
     if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>(datetime.date.today()+datetime.timedelta(1)):
         return render_template('table-export.html', start_date=start_date, end_date=end_date)
-    os.chdir('model')
     if ids != 'all':
-        datas = eval('''_export.{ids}(start_date,end_date,'./static')'''.format(ids=ids))
+        datas = eval('''_export.{ids}(start_date,end_date,'')'''.format(ids=ids))
     else:
         datas = all2excel(start_date, end_date)
     data2excel(datas,ids)
@@ -66,7 +65,6 @@ def export():
     return response
 
 def data2excel(datas, ids):
-    os.chdir(cwd)
     if not os.path.exists('./static'):
         os.makedirs('./static')
     writer = pd.ExcelWriter('./static/{ids}.xlsx'.format(ids=ids))

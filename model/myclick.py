@@ -20,8 +20,10 @@ html = '''https://web.umeng.com/main.php?c=cont&a=page&ajax=module=summarysource
 
 # columns = ['受访页面', '浏览次数(PV)', '独立访客(UV)', 'IP', '人均浏览页数', '页面停留时间', '输出PV', '平均页面停留时间']
 # 获取映射规则
-def getRule():
-    rules = pd.read_csv('../static/rules.txt', sep='\s+', header=None)
+def getRule(path='../static/rules.txt'):
+    if not os.path.exists(path):
+        path = './static/rules.txt'
+    rules = pd.read_csv(path, sep='\s+', header=None)
     rules.columns = ['id', 'name']
     return rules
 
@@ -69,10 +71,10 @@ def preDate(startDate1='2018-06-15', endDate1=TODAY):
     startdate = datetime.date(startDate[0], startDate[1], startDate[2])
     today = endDate1 if type(endDate1) is datetime.date else datetime.date(splitDate(endDate1)[0],splitDate(endDate1)[1],splitDate(endDate1)[2])
     print('Starting to crawl data....')
-    results = None
-    for i in tqdm(range((today - startdate).days)):
+    results = None; rules = getRule()
+    for i in tqdm(range((today - startdate).days+1)):
         date = startdate + datetime.timedelta(i)
-        result = getDateClick(date.strftime('%Y-%m-%d'))
+        result = getDateClick(date.strftime('%Y-%m-%d'), rules)
         # break
         if i == 0:
             results = result
@@ -92,10 +94,10 @@ def all_click(df, rules=['首页','支付页','本店券','邻店券']):
     df1.sort_values(by='受访页面', inplace=True)
     return df1
 
-def write_csv(df):
-    if not os.path.exists('../static/click'):
-        os.makedirs('../static/click')
-    df.to_csv('../static/click/click.csv', index=False, encoding='GBK')
+def write_csv(df, path='../static/click'):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    df.to_csv(os.path.join(path,'click.csv'), index=False, encoding='GBK')
     print('saving data has finished!')
 
 if __name__ == '__main__':
