@@ -54,7 +54,7 @@ def getDateClick(date, rule=getRule()):
             for _ in data['statistics']['items']:
                 # type(_) is dict
                 # clicks.append(list(_.values()))
-                clicks.append(list(_.values())[:2])
+                clicks.append([_['source'], _['pv']])
         else:
             break
     df = pd.DataFrame(clicks,columns=columns)
