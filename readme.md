@@ -16,7 +16,9 @@
   - pip install tqdm
 6. install Selenium
   - pip install selenium
-  - phantomjs可以在http://phantomjs.org直接下载，解压就可以用了
+  - phantomjs可以在http://phantomjs.org 直接下载，解压之后将文件夹重命名为phantomjs，并放在主目录的plugins文件夹下。最终目录结构如下：ww-plan->plugins-> phantomjs。为了保证windows和linux开发的一致性，务必将解压后文件夹下bin目录下的可执行文件重命名为phantomjs.exe。
+ 7. install requests
+  - pip install requests
 
 # 文件夹说明
 1. sql文件夹下存放的是MySQL数据表的一些索引创建文件
@@ -43,4 +45,5 @@
 主要是仿照./model/util.py的Export类中的第一个函数，按照优先级要求实现其余表的导入导出功能。相应表的导入导出函数用该表的拼音命名。如：导出门店流水是mdls.xlsx
 
 2. 本地运行(debug阶段)
+  - 依赖安装完成之后，cd到model目录下先运行myclick.py。如无意外，系统会在static目录下创建一个文件夹保存点击量表的。可以检查下这张点击量表，在windows和ubuntu环境下生成的统计量表是对的
   - python app.py之后，在本地访问127.0.0.1:5000便可访问
