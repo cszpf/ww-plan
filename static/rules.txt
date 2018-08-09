@@ -1,6 +1,6 @@
-﻿/h5/cardevo/index.html#/payCustomer/3?payFrom=qrcode     支付页（扫码来源）
-/h5/cardevo/index.html#/payCustomer/3?payFrom=message    支付页（消息模板来源）
-/h5/cardevo/index.html#/payCustomer/3?payFrom=coupons   支付页（优惠券来源）
+﻿payFrom=qrcode     支付页（扫码来源）
+payFrom=message    支付页（消息模板来源）
+payFrom=coupons   支付页（优惠券来源）
 /h5/cardevo/index.html#/paySuccess       支付成功页面
 /h5/cardevo/index.html#/bossBill       老板账单列表页
 /h5/cardevo/index.html#/bossBillDetail       老板账单详情页
