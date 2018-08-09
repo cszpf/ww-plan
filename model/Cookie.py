@@ -1,5 +1,6 @@
 # encoding='UTF-8'
 import pickle
+import os
 import time
 import requests
 import selenium
@@ -35,7 +36,7 @@ class Cookie:
     def get_cookie(self):
         r = s.post(self.login_url, headers=self.heads, data={'loginId':self.loginId,'password2':self.password2})
         data = r.text
-        print(data)
+        # print(data)
         for i in s.cookies:
             print(i.name,i.value)
         cookie1 = r.cookies
@@ -47,7 +48,10 @@ class Cookie:
 
     # 用selenium部分更新cookies的方式
     def get_cookie_from_network(self):
-        driver = selenium.webdriver.PhantomJS('../plugins/phantomjs/bin/phantomjs.exe')
+        path = '../plugins/phantomjs/bin/phantomjs.exe'
+        if not os.path.exists(path):
+            path = 'plugins/phantomjs/bin/phantomjs.exe'
+        driver = selenium.webdriver.PhantomJS(path)
         driver.get('https://passport.umeng.com/login')
         driver.switch_to.frame('alibaba-login-box')
         driver.find_element_by_id('fm-login-id').send_keys(self.loginId)
