@@ -29,6 +29,7 @@
   - util.py是主程序, 目前主要实现导表功能；
   - connectTool.py为数据库连接工具，主要实现数据库连接功能；
   - click.py是点击量的爬虫代码，主要功能是从指定合作网站中爬取生产系统页面访问信息；
+6. dataSystem文件夹下存放的是vue.js框架开发的前端代码
 
 # 部署服务(本地开发不用了解)
 1. 需安装flask+uwsgi:在windows安装会出错
@@ -41,9 +42,9 @@
 4. 另外系统默认采用debug模式，部署到生产环境中时需将debug模式置为False,在app.py的最后一行
 
 # 开发声明
-1. 详见之前微信群里发的压缩包中的需求说明文档
-主要是仿照./model/util.py的Export类中的第一个函数，按照优先级要求实现其余表的导入导出功能。相应表的导入导出函数用该表的拼音命名。如：导出门店流水是mdls.xlsx
+1. 详见之前微信群里发的压缩包中的需求说明文档,主要是仿照./model/util.py的Export类中的第一个函数，按照优先级要求实现其余表的导入导出功能。相应表的导入导出函数用该表的拼音命名。如：导出门店流水是mdls.xlsx
 
 2. 本地运行(debug阶段)
   - 依赖安装完成之后，cd到model目录下先运行myclick.py。如无意外，系统会在static目录下创建一个文件夹保存点击量表的。可以检查下这张点击量表，在windows和ubuntu环境下生成的统计量表是对的
+  - 启动整个服务之前，先确保电脑已安装node.js(可以在https://nodejs.org/en/ 下载),cd到dataSystem文件夹下,然后依次 运行指令npm install, npm install --save axios, npm run build, npm run dev。
   - python app.py之后，在本地访问127.0.0.1:5000便可访问

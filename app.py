@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, make_response, send_file
+from flask import Flask, request, render_template, make_response, send_file, jsonify
+from flask_cors import CORS
 import logging
 import os
 import jinja2
@@ -10,9 +11,13 @@ from util import Export
 import pandas as pd
 cwd = os.getcwd()
 
-jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
-    os.path.join(cwd, 'templates')))
-app = Flask(__name__, static_url_path='',root_path='')
+# jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
+#     os.path.join(cwd, 'templates')))
+#app = Flask(__name__, static_url_path='',root_path='')
+app = Flask(__name__,
+            static_folder = 'dataSystem/dist/static',
+            template_folder = 'dataSystem/dist')
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 _export = Export()
 
 def write_log():
@@ -22,30 +27,37 @@ def write_log():
 @app.route('/', methods=['GET'])
 def signin_form():
     write_log()
-    return render_template('sign-form.html')
+    #return render_template('sign-form.html')
+    return render_template('index.html')
 
-@app.route('/signin', methods=['GET'])
+@app.route('/<path:path>', methods=['GET'])
 def x():
-    return render_template('sign-form.html')
+    write_log()
+    return render_template('index.html')
 
-@app.route('/export', methods=['GET'])
-def x1():
-    return render_template('sign-form.html')
-
-@app.route('/signin', methods=['POST'])
+@app.route('/api/signin', methods=['POST'])
 def signin():
     write_log()
+    print(eval(request.data))
     md5 = hashlib.md5()
-    username = request.form['username']
-    password = request.form['password']
+    username = eval(request.data).get('username')
+    password = eval(request.data).get('password')
     md5.update(username.encode(encoding='utf-8'))
     username1 = md5.hexdigest()
     md5 = hashlib.md5()
     md5.update(password.encode(encoding='utf-8'))
     password1 = md5.hexdigest()
+    _dict = {
+        'username':username,
+        'password':password,
+        'status':'ok'
+        }
     if username1 == '414ccf4cba23f4ed1984caaca8492fff' and password1 == 'e10adc3949ba59abbe56e057f20f883e':
-        return render_template('table-export.html')
-    return render_template('sign-form.html', message='admin or password error', username=username)
+        pass
+        # return render_template('table-export.html')
+    else:
+        _dict.update({'status':'账号或密码有误'})
+    return jsonify(_dict)
 
 @app.route('/export', methods=['POST'])
 def export():
