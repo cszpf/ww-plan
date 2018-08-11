@@ -297,7 +297,7 @@ class Export:
         return df, '券排名'
 
     def ydqxq(self, start_date, end_date, dir_name):
-        columns = ['日期', '名称', '商户', '标签', '领券量', '发放结束日期']
+        columns = ['日期', '名称', '商户', '标签', '起始日期之前的领券量', '截止日期之前的领券量', '发放结束日期']
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
         all_data1 = [];all_data2 = [];all_data3 = [];   #快到期、修改、下线
@@ -309,43 +309,51 @@ class Export:
             where expire_date is not null and datediff(expire_date,'{}')=10'''.format(curr_date)
             result = self.connect.query(self.connect.coupons, sql_kdq)
             for x in range(len(result)):
-                curr_date2 = start_date + datetime.timedelta(i+1)   #含当天,次日零时
-                sql_kdq_num = sql_coupons_num.format(curr_date2, result[x][2])
+                # curr_date2 = start_date + datetime.timedelta(i+1)   #含当天,次日零时 算表的日期之前的领券量可用
+                sql_kdq_num = sql_coupons_num.format(start_date, result[x][2])
                 get_num = self.connect.query(self.connect.coupons, sql_kdq_num)[0][0]
+                sql_kdq_num2 = sql_coupons_num.format(end_date, result[x][2])
+                get_num2 = self.connect.query(self.connect.coupons, sql_kdq_num2)[0][0]
                 all_data1.append([curr_date.strftime("%y%m%d"), result[x][0], self.connect.mer_id2name(result[x][1]),
-                              self.connect.cou_cfg_id2label(result[x][2]), get_num, result[x][3].strftime("%y%m%d")])
+                              self.connect.cou_cfg_id2label(result[x][2]), get_num, get_num2, result[x][3].strftime("%y%m%d")])
         #修改
         sql_xg = '''select update_time, name, merchant_id, coupons_config_id, publish_end_date 
         from coupons_config where update_time > '{}' and update_time < '{}';'''.format(start_date, end_date)
         result = self.connect.query(self.connect.coupons, sql_xg)
         for res in result:
-            sql_xg = sql_coupons_num.format(res[0], res[3])
+            sql_xg = sql_coupons_num.format(start_date, res[3])
             get_num = self.connect.query(self.connect.coupons, sql_xg)[0][0]
+            sql_xg = sql_coupons_num.format(end_date, res[3])
+            get_num2 = self.connect.query(self.connect.coupons, sql_xg)[0][0]
             all_data2.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
-                              self.connect.cou_cfg_id2label(res[3]),get_num, res[4].strftime("%y%m%d")])
+                              self.connect.cou_cfg_id2label(res[3]),get_num, get_num2, res[4].strftime("%y%m%d")])
         #下线
         sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config 
         where publish_end_date>'{}' and publish_end_date<'{}';'''.format(start_date, end_date)
         result = self.connect.query(self.connect.coupons, sql_xx)
         for res in result:
-            sql_xx = sql_coupons_num.format(res[0], res[3])
+            sql_xx = sql_coupons_num.format(start_date, res[3])
             get_num = self.connect.query(self.connect.coupons, sql_xx)[0][0]
+            sql_xx = sql_coupons_num.format(end_date, res[3])
+            get_num2 = self.connect.query(self.connect.coupons, sql_xx)[0][0]
             all_data3.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
-                              self.connect.cou_cfg_id2label(res[3]), get_num, res[0].strftime("%y%m%d")])
+                              self.connect.cou_cfg_id2label(res[3]), get_num, get_num2, res[0].strftime("%y%m%d")])
 
         all_data = [all_data1, all_data2, all_data3];   all_df = []
         file = ['快到期券详情', '修改券详情', '下线券详情']
+        # i = 0
         for d in all_data:
             df = pd.DataFrame(d, columns=columns)
             all_df.append(df)
             # df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
+            # i += 1
         return all_df, file
 
 def main():
     export = Export()
-    export.shyq('2018-6-20','2018-7-21','./')
+    # export.shyq('2018-6-20','2018-7-21','./')
     # export.qpm('2018-7-1','2018-7-21','./')
-    # export.ydqxq('2018-6-1', '2018-7-16', './')
+    export.ydqxq('2018-6-1', '2018-7-16', './')
 
 if __name__ == '__main__':
     main()
