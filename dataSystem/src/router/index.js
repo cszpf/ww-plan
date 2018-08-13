@@ -26,6 +26,14 @@ export default new Router({
       },
       component: resolve => require(['@/views/passwd'], resolve)
     },
+    // 导表页面
+    {
+      path: '/tableList',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/tableList'], resolve)
+    },
     // 主页
     {
       path: '/index',
