@@ -29,8 +29,11 @@ class Export:
     # 实现门店流水表的在线生成
 
     def shqxq(self, start_date, end_date, dir_name):
-        enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + datetime.timedelta(1)
+        #enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + datetime.timedelta(1)
+        #startdate = enddate - datetime.timedelta(14)
+        enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         startdate = enddate - datetime.timedelta(14)
+        enddate1 = enddate + datetime.timedelta(1)
         columns = ['商户名','行政区', '微区域', '行业', '销售姓名', '运营姓名',
                    '最近15天({0}-{1})流水总额'.format(startdate,enddate), '最近15天({0}-{1})流水天数'.format(startdate,enddate)]
         all_data = []
@@ -59,12 +62,12 @@ class Export:
                                         WHERE subbranch_id='{0}' AND type IN (2,3) AND state=2 
                                         AND create_time between '{1}' and '{2}'
                                         GROUP BY create_time 
-                                        ORDER BY create_time """.format(sub[0], startdate,enddate )#时间记得改成是最近15天
+                                        ORDER BY create_time """.format(sub[0], startdate,enddate1 )#时间记得改成是最近15天
                         sql2deposit = """SELECT sum(-amount),create_time FROM user_deposit_card_log 
                                          WHERE subbranch_id='{0}' AND amount < 0 
                                          AND create_time between '{1}' and '{2}'
                                          GROUP BY create_time  
-                                          ORDER BY create_time """.format(sub[0], startdate,enddate)
+                                          ORDER BY create_time """.format(sub[0], startdate,enddate1)
                         result2wechat = self.connect.query(self.connect.fenqi, sql2wechat)  # 遍历每个门店的微信流水
                         result2deposit = self.connect.query(self.connect.fenqi, sql2deposit)  # 遍历每个门店的储值卡流水
                         money2 = [];
@@ -108,11 +111,11 @@ class Export:
                                     if i:
                                         sql7="""SELECT COUNT(*) FROM coupons
                                                         WHERE coupons_config_id='{0}'
-                                                        AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate)
+                                                        AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate1)
                                         sql7result = self.connect.query(self.connect.coupons, sql7)#得到该配置id有多少张券被领了
                                         sql8="""SELECT COUNT(*) FROM coupons
                                                 WHERE coupons_config_id='{0}' and `status`=1
-                                                AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate)
+                                                AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate1)
                                         sql8result = self.connect.query(self.connect.coupons, sql8)  # 得到该配置id有多少张券被用了
                                         bq_lq.update({sql5result[0][0]:sql7result[0][0]})
                                         bq_yq.update({sql5result[0][0]:sql8result[0][0]})
@@ -132,10 +135,16 @@ class Export:
                 #print(data)
             all_data.append(data)
 
+        # if not os.path.exists(dir_name):
+        #     os.makedirs(dir_name)
+        # df = pd.DataFrame(all_data, columns=columns)
+        # df.to_csv(os.path.join(dir_name, 'shqxq.csv'), index=False, encoding='gbk', sep=',')
+
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
         return df,'商户券详情'
+
 
     def mdpm(self, start_date, end_date, dir_name):
         indexs = []
@@ -318,7 +327,7 @@ class Export:
 def main():
     export = Export()
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
-    #export.shqxq('2018-7-18','2018-7-28', r'\Users\qiqi\Desktop')
-    export.mdpm('2016-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
+    export.shqxq('2018-5-18','2018-8-28', r'\Users\16538\Desktop')
+    #export.mdpm('2016-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
