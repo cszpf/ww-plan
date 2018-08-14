@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, make_response, send_file, jsonify
 from flask_cors import CORS
+import pickle as pk
 import logging
 import os
 import jinja2
@@ -10,7 +11,6 @@ sys.path.append('./model')
 from util import Export
 import pandas as pd
 cwd = os.getcwd()
-
 # jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
 #     os.path.join(cwd, 'templates')))
 #app = Flask(__name__, static_url_path='',root_path='')
@@ -27,7 +27,6 @@ def write_log():
 @app.route('/', methods=['GET'])
 def signin_form():
     write_log()
-    #return render_template('sign-form.html')
     return render_template('index.html')
 
 @app.route('/<path:path>', methods=['GET'])
@@ -38,37 +37,51 @@ def x():
 @app.route('/api/signin', methods=['POST'])
 def signin():
     write_log()
-    print(eval(request.data))
-    md5 = hashlib.md5()
+    # print(eval(request.data))
     username = eval(request.data).get('username')
     password = eval(request.data).get('password')
-    md5.update(username.encode(encoding='utf-8'))
-    username1 = md5.hexdigest()
-    md5 = hashlib.md5()
-    md5.update(password.encode(encoding='utf-8'))
-    password1 = md5.hexdigest()
+    username1 = getMD5(username); password1 = getMD5(password)
     _dict = {
         'username':username,
         'password':password,
         'status':'ok'
         }
-    if username1 == '414ccf4cba23f4ed1984caaca8492fff' and password1 == 'e10adc3949ba59abbe56e057f20f883e':
+    if username1 == '414ccf4cba23f4ed1984caaca8492fff' and password1 == modifyKey(methods='get'):
         pass
-        # return render_template('table-export.html')
     else:
         _dict.update({'status':'账号或密码有误'})
     return jsonify(_dict)
 
-@app.route('/export', methods=['POST'])
-def export():
+@app.route('/api/pwd', methods=['POST'])
+def changePwd():
+    data = eval(request.data)
     write_log()
-    start_date = request.form['start_date']
-    end_date = request.form['end_date']
-    ids = request.form['ids']
-    if start_date == '' or end_date == '' or start_date > end_date or datetime.datetime.strptime(end_date, '%Y-%m-%d').date()>(datetime.date.today()+datetime.timedelta(1)):
-        return render_template('table-export.html', start_date=start_date, end_date=end_date)
+    oldpwd = data.get('oldpwd')
+    newpwd = data.get('newpwd')
+    twice = data.get('twice')
+    _dict = {
+        'status':'ok'
+        }
+    if newpwd != twice:
+        _dict.update({'status':'请确认两次输入密码一致'})
+        return jsonify(_dict)
+    oldpwd = getMD5(oldpwd)
+    newpwd = getMD5(newpwd)
+    if oldpwd == modifyKey(methods='get'):
+        modifyKey(methods='post', object=newpwd)
+    else:
+        _dict.update({'status':'原密码输入错误'})
+    return jsonify(_dict)
+
+@app.route('/api/export', methods=['POST'])
+def export():
+    data = eval(request.data)
+    write_log()
+    start_date = data['date'][0]
+    end_date = data['date'][1]
+    ids = data['ids']
     if ids != 'all':
-        datas = eval('''_export.{ids}(start_date,end_date,'')'''.format(ids=ids))
+        datas = eval('''_export.{ids}(start_date,end_date,'static')'''.format(ids=ids))
     else:
         datas = all2excel(start_date, end_date)
     data2excel(datas,ids)
@@ -105,6 +118,23 @@ def all2excel(start_date, end_date):
         except:
             datas.append(_datas[0]); mzs.append(_datas[1])
     return datas, mzs
+
+def modifyKey(path='static', **pkgs):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    if pkgs.get('methods') == 'get':
+        if not os.path.exists(os.path.join(path,'keys')):
+            return 'e10adc3949ba59abbe56e057f20f883e'
+        with open(os.path.join(path,'keys'),'rb') as fr:
+            return pk.load(fr)
+    else:
+        with open(os.path.join(path,'keys'),'wb') as fw:
+            pk.dump(pkgs['object'], fw)
+
+def getMD5(pwd):
+    md5 = hashlib.md5()
+    md5.update(pwd.encode('utf-8'))
+    return md5.hexdigest()
 
 if __name__ == '__main__':
     if not os.path.exists('./log'):

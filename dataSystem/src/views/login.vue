@@ -4,10 +4,10 @@
         <h3 class="login-title">运营统计系统</h3>
         <el-form ref="form" :model="form">
           <el-form-item>
-            <el-input v-model="form.username" placeholder="帐号" type="text">{{form.username}}</el-input>
+            <el-input v-model="form.username" placeholder="帐号" type="text">{{username}}</el-input>
           </el-form-item>
           <el-form-item>
-            <el-input v-model="form.password" placeholder="密码" type="password">{{form.password}}</el-input>
+            <el-input v-model="form.password" placeholder="密码" type="password">{{password}}</el-input>
           </el-form-item>
           <el-form-item>
               <el-button class="login-button" type="warning" @click="submitForm">登录</el-button>
@@ -34,9 +34,10 @@ export default {
       const path = 'http://localhost:5000/api/signin'
       axios.post(path, {username: this.form.username, password: this.form.password})
         .then(function (response) {
-          if (response.data.status === 'ok') {
+          if (response.data.status == 'ok') {
             _this.$router.push({path: '/tableList'})
           } else {
+            _this.form.password = ''
             _this.$message.error(response.data.status)
           }
         })
