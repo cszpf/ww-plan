@@ -2,7 +2,7 @@
   <div id="tableList">
     <div class="titie">
       <div>
-        <el-date-picker class="pocker" type="daterange" v-model="date" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd"></el-date-picker>
+        <el-date-picker @change="dateList" class="pocker" type="daterange" v-model="date" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd"></el-date-picker>
         <el-button type="success" plain @click="gotoIndex">高级检索</el-button>
       </div>
       <div class="tableList-button">
@@ -39,6 +39,9 @@ export default {
     }
   },
   methods: {
+    dateList () {
+      console.log(this.date)
+    },
     allTableData () {
       console.log('导出所有表格')
     },
