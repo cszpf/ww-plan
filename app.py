@@ -93,7 +93,7 @@ def export():
     return response
 
 @app.route('/api/table_export', methods=['POST'])
-def export():
+def table_export():
     data = eval(request.data)
     write_log()
     start_date = data['date'][0]
