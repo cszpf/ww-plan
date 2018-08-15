@@ -8,6 +8,7 @@ import hashlib
 import sys
 import datetime
 sys.path.append('./model')
+from databind import Databind
 from util import Export
 import pandas as pd
 cwd = os.getcwd()
@@ -19,6 +20,7 @@ app = Flask(__name__,
             template_folder = 'dataSystem/dist')
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 _export = Export()
+_databind = Databind()
 
 def write_log():
     app.logger.info('info log')
@@ -80,14 +82,35 @@ def export():
     start_date = data['date'][0]
     end_date = data['date'][1]
     ids = data['ids']
+    opt = data.get('opt', {})
     if ids != 'all':
-        datas = eval('''_export.{ids}(start_date,end_date,'static')'''.format(ids=ids))
+        datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
     else:
         datas = all2excel(start_date, end_date)
     data2excel(datas,ids)
     response = make_response(send_file("./static/{ids}.xlsx".format(ids=ids)))
     response.headers['Content-Disposition'] = "attachment;filename={}.xlsx".format(ids)
     return response
+
+@app.route('/api/table_export', methods=['POST'])
+def export():
+    data = eval(request.data)
+    write_log()
+    start_date = data['date'][0]
+    end_date = data['date'][1]
+    ids = data['ids']
+    opt = data.get('opt', {})
+    if ids != 'all':
+        datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
+    else:
+        datas = all2excel(start_date, end_date)
+    return jsonify(datas)
+
+@app.route('/api/databind', methods=['POST'])
+def databind():
+	data = eval(request.data)
+	write_log()
+	return jsonify(eval('''_databind.{ids}(data)'''.format(ids=data['id'])))
 
 def data2excel(datas, ids):
     if not os.path.exists('./static'):
