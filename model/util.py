@@ -141,9 +141,8 @@ class Export:
                         data1.update({__.date():data1.get(__.date(),0)+_})
                     del(data)
                     max_date = max(data1.keys())
-                    print(data1.keys())
                     len_date = len([_ for _ in data1.keys() if (end_date - _).days<=30 and (end_date - _).days>0])
-                    print(len_date)
+                    # print(len_date)
                     ifactive = True if len_date >= (16 if (end_date-ddtgrq).days >= 30 else (end_date-ddtgrq).days//2 + 1) else False
                     ifsilent = True if (end_date - max_date).days >= 15 else False
                 else:#没有消费记录
