@@ -46,5 +46,5 @@
 
 2. 本地运行(debug阶段)
   - 依赖安装完成之后，cd到model目录下先运行myclick.py。如无意外，系统会在static目录下创建一个文件夹保存点击量表的。可以检查下这张点击量表，在windows和ubuntu环境下生成的统计量表是对的
-  - 启动整个服务之前，先确保电脑已安装node.js(可以在https://nodejs.org/en/ 下载),cd到dataSystem文件夹下,然后依次 运行指令npm install, npm install --save axios, npm run build, npm run dev。
-  - python app.py之后，在本地访问127.0.0.1:5000便可访问
+  - 启动整个服务之前，先确保电脑已安装node.js(可以在https://nodejs.org/en/ 下载),在dataSystem文件夹下进入命令行,然后依次运行指令npm install， npm run dev, npm run build。
+  - 在项目根目录下，运行指令python app.py之后，在本地访问127.0.0.1:5000便可访问我们的系统
