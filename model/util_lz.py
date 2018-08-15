@@ -140,8 +140,11 @@ class Export:
                             datelist.append(__.date())
                         max_date = max(datelist)
                         _datelist = list(set(datelist))
-                        len_date = len([_ for _ in _datelist if (end_date - _).days<=30 and (end_date - _).days>0])
-                        ifactive = True if len_date >= (16 if (x-sxrq).days >= 30 else (x-sxrq).days//2 + 1) else False
+                        len_date = len([_ for _ in _datelist if (x - _).days<=30 and (x - _).days>0])
+                        if (x-sxrq).days <= 0:
+                            ifactive = False
+                        else:
+                            ifactive = True if len_date >= (16 if (x-sxrq).days >= 30 else (x-sxrq).days//2 + 1) else False
                     else:
                         ifactive = False
                     if ifactive:
@@ -230,7 +233,7 @@ class Export:
             x = start_date + datetime.timedelta(i)
             #指定日期前15天没有流水的商户
             tempdata = []
-            #_data = set()
+            _data = []
             merdict = {}
             for _sub in result:
                 if _sub:
@@ -248,22 +251,24 @@ class Export:
                         if not merid in merdict:
                             merdict[merid] = 0
                         merdict[merid] += 1
+            #print("start " + str(i) + "---------------")
             for merid in merdict:
                 sql3 = """SELECT a.merchant_id, merchant_name, subbranch_id, subbranch_name 
                 FROM merchant a, subbranch b
                 WHERE a.merchant_id = b.merchant_id AND a.merchant_id = '{}'""".format(merid)
                 result3 = self.connect.query(self.connect.fenqi, sql3)
                 if(len(result3) == merdict[merid]):
-                    tempdata.append(self.connect.merid2shortname(merid))
-            #后台优惠券全部下架的商户
-            # for j in tempdata:
-            #     sql4 = """SELECT merchant_id, subbranch_id
-            #     FROM coupons_config
-            #     WHERE merchant_id = '{}' AND (status = 1 OR status = 2)""".format(j)
-            #     result4 = self.connect.query(self.connect.coupons, sql4)
-            #     if(len(result4) == 0):
-            #         _data.add(self.connect.merid2shortname(j))
-            all_data.append(tempdata)  
+                    tempdata.append(merid)
+            # 后台优惠券全部下架的商户
+            for j in tempdata:
+                sql4 = """SELECT merchant_id, subbranch_id
+                FROM coupons_config
+                WHERE merchant_id = '{}' AND status IN (1,2)""".format(j)
+                result4 = self.connect.query(self.connect.coupons, sql4)
+                if(len(result4) == 0):
+                    _data.append(self.connect.merid2shortname(j))
+            #print("end " + str(i) + "---------------")
+            all_data.append(_data)  
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
@@ -374,12 +379,12 @@ class Export:
 
 def main():
     export = Export()
-    #export.mdls('2018-6-19','2018-6-30','./')
+    #export.mdls('2018-8-1','2018-8-15','./')
     #export.mdlszb('2018-6-1','2018-6-4','./')
     #export.cmmd('2018-6-1', '2018-6-10', './')
-    #export.hymd('2018-6-1','2018-6-5','./')
+    #export.hymd('2018-8-1','2018-8-15','./')
     #export.ydsh('2018-6-1','2018-6-10','./')
-    #export.lssh('2018-6-1','2018-6-10','./')
+    export.lssh('2018-7-11','2018-7-28','./')
     #export.mdhz('2018-6-1','2018-6-10','./')
 if __name__ == '__main__':
     main()
