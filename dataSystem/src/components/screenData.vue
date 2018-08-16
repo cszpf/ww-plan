@@ -3,7 +3,7 @@
       <div class="screen">
       <el-form ref="form" :model="form" label-width="80px" class="screen">
         <el-form-item label="行政区 :">
-          <span :class="[adminiIndex===index?'admini':'','screen-span']" v-for="(item, index) in adminiStrative" :key="item.id" @click="adminiStrativeData(item, index)">{{ item.name }}</span>
+          <span :class="[adminiIndex===index?'admini':'','screen-span']" v-for="(item, index) in district" :key="item.id" @click="adminiStrativeData(item, index)">{{ item.name }}</span>
           <el-button class="guidetable" type="success" size="small">导表</el-button>
         </el-form-item>
         <el-form-item label="微区域 :">
@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   props: {
     sogo: {
@@ -51,6 +52,12 @@ export default {
     shop: {
       type: Boolean,
       default: true
+    },
+    district: {
+      type: Array,
+      default: function () {
+        return []
+      }
     }
   },
   data () {
@@ -65,33 +72,9 @@ export default {
         { name: '广州市白云区', id: '2', type: 'adminiStrative' },
         { name: '广州市荔湾区', id: '3', type: 'adminiStrative' }
       ],
-      microarea: [
-        // 微区域
-        { name: '市桥商圈', id: '4', type: 'microarea' },
-        { name: '大石商圈', id: '5', type: 'microarea' },
-        { name: '万博商圈', id: '6', type: 'microarea' }
-      ],
-      trade: [
-        // 行业
-        { name: '加油', id: '6', type: 'trade' },
-        { name: '娱乐', id: '7', type: 'trade' },
-        { name: '美容', id: '9', type: 'trade' },
-        { name: '健身', id: '10', type: 'trade' },
-        { name: '汽车', id: '11', type: 'trade' },
-        { name: '保健', id: '12', type: 'trade' },
-        { name: '宠物', id: '13', type: 'trade' },
-        { name: '正餐', id: '14', type: 'trade' },
-        { name: '快餐', id: '15', type: 'trade' },
-        { name: '茶饮', id: '16', type: 'trade' },
-        { name: '甜品', id: '17', type: 'trade' },
-        { name: 'ktv', id: '18', type: 'trade' },
-        { name: '其他', id: '19', type: 'trade' }
-      ],
-      salesManager: [
-        // 销售经理
-        { name: '小超', id: '20', type: 'trasalesManagerde' },
-        { name: '小熊', id: '21', type: 'trasalesManagerde' }
-      ],
+      microarea: [], // 微区域
+      trade: [], // 行业
+      salesManager: [], // 销售经理
       operationManager: [
         // 运营经理
         { name: '小意', id: '22', type: 'operationManager' },
@@ -111,50 +94,79 @@ export default {
       tags: []
     }
   },
+  created () {},
+  mounted () {
+    this.loadData('MERCHANT_TYPE') // 行业
+    this.loadData('SALE_NAME') // 销售经理
+  },
   methods: {
+    loadData (idnmae) {
+      let _this = this
+      console.log(idnmae)
+      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
+        .then(function (response) {
+          console.log(response.statusText)
+          console.log(response.statusText === 'OK')
+          if (response.statusText === 'OK') {
+            console.log(response)
+            if (idnmae === 'MERCHANT_TYPE') {
+              _this.trade = response.data.MERCHANT_TYPE
+            }
+            if (idnmae === 'SALE_NAME') {
+              _this.salesManager = response.data.SALE_NAME
+            }
+          } else {
+            _this.$message.error('占无数据')
+          }
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
     adminiStrativeData (data, index) {
       // 选择行政区
+      let _this = this
       this.adminiIndex = index
       let adminiStrativeBl = false
-      let adminiStrativeType = 'adminiStrative'
+      let adminiStrativeType = 'ADMIN_REGION_CODE'
       this.screening(adminiStrativeBl, this.tags, data, adminiStrativeType)
-    //   if (this.tags.length === 0) {
-    //     this.tags.push(data)
-    //   } else {
-    //     this.tags.forEach((item, index) => {
-    //       if (item.type === 'adminiStrative') {
-    //         adminiStrativeBl = true
-    //         this.tags.splice(index, 1, data)
-    //       }
-    //     })
-    //     if (!adminiStrativeBl) { this.tags.push(data) }
-    //   }
+      _this.tags.forEach((item, index) => {
+        if (item.type === 'MICRO_REGION_CODE') {
+          _this.tags.splice(index, 1)
+          _this.microareaindex = ''
+        }
+      })
+      console.log(data)
+      if (data) {
+        _this.microarea = []
+        axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MICRO_REGION_CODE', 'opt': {'ADMIN_REGION_CODE': data.id}}})
+          .then(function (response) {
+            if (response.statusText === 'OK') {
+              console.log(response)
+              _this.microarea = response.data.MICRO_REGION_CODE
+              console.log(_this.microarea)
+            } else {
+              _this.$message.error('占无数据')
+            }
+          })
+          .catch(function (error) {
+            console.log(error)
+          })
+      }
     },
     microareaData (data, index) {
       // 微区域
       this.microareaindex = index
       let microareaBl = false
-      let microareaType = 'microarea'
+      let microareaType = 'MICRO_REGION_CODE'
       console.log(this.tags)
       this.screening(microareaBl, this.tags, data, microareaType)
-    //   if (this.tags.length === 0) {
-    //     this.tags.push(data)
-    //   } else {
-    //     this.tags.forEach((item, index) => {
-    //       if (item.type === 'microarea') {
-    //         microareaBl = true
-    //         this.tags.splice(index, 1, data)
-    //         console.log(microareaBl)
-    //       }
-    //     })
-    //     if (!microareaBl) { this.tags.push(data) }
-    //   }
     },
     tradeData (data, index) {
       // 行业
       this.tradeindex = index
       let tradeBl = false
-      let tradeType = 'trade'
+      let tradeType = 'MERCHANT_TYPE'
       console.log(this.tags)
       this.screening(tradeBl, this.tags, data, tradeType)
     },
@@ -162,7 +174,7 @@ export default {
       // 销售经理
       this.salesManagerindex = index
       let salesManagerBl = false
-      let salesManagerType = 'trasalesManagerde'
+      let salesManagerType = 'SALE_NAME'
       console.log(this.tags)
       this.screening(salesManagerBl, this.tags, data, salesManagerType)
     },
@@ -198,16 +210,16 @@ export default {
     },
     handleClose (type, index) {
       this.tags.splice(index, 1)
-      if (type === 'adminiStrative') {
+      if (type === 'ADMIN_REGION_CODE') {
         this.adminiIndex = ''
       }
-      if (type === 'microarea') {
+      if (type === 'MICRO_REGION_CODE') {
         this.microareaindex = ''
       }
-      if (type === 'trade') {
+      if (type === 'MERCHANT_TYPE') {
         this.tradeindex = ''
       }
-      if (type === 'trasalesManagerde') {
+      if (type === 'SALE_NAME') {
         this.salesManagerindex = ''
       }
       if (type === 'operationManager') {

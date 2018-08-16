@@ -1,6 +1,6 @@
 <template>
   <div id="storesSummary">
-    <screenData :sogo="merchant" :shop="outlet"></screenData>
+    <screenData :district='adminiStrative' :sogo="merchant" :shop="outlet"></screenData>
     <div class="stores-table">
       <!-- <el-table class="screen-table" style="width:83%" :data="tableData3">
         <el-table-column fixed prop="date" label="指标" min-width="110"></el-table-column>
@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import screenData from '../components/screenData.vue'
 export default {
   data () {
@@ -90,20 +91,49 @@ export default {
       outlet: false,
       pageNumber: 1,
       pageSize: 20,
-      total: 0
+      total: 0,
+      adminiStrative: []
     }
+  },
+  created () {},
+  mounted () {
+    this.loadData('ADMIN_REGION_CODE')
   },
   components: {
     'screenData': screenData
   },
-  methods: {}
+  methods: {
+    loadData (idnmae) {
+      let _this = this
+      console.log(idnmae)
+      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
+        .then(function (response) {
+          console.log(response.statusText)
+          console.log(response.statusText === 'OK')
+          if (response.statusText === 'OK') {
+            if (idnmae === 'ADMIN_REGION_CODE') {
+              _this.adminiStrative = response.data.ADMIN_REGION_CODE ? response.data.ADMIN_REGION_CODE : ''
+            }
+            console.log(_this.adminiStrative)
+          } else {
+            _this.$message.error('占无数据')
+          }
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    }
+  }
 }
 </script>
 
 <style scoped>
+#storesSummary {
+  font-size: 12px;
+}
 .box {
   width: 100%;
-  height: 700px;
+  height: 560px;
   /* border: 1px solid #000000; */
   display: flex;
   flex-direction: row;
@@ -127,9 +157,9 @@ export default {
   border-right: 1px solid #dddddd;
 }
 .box-title {
-  height: 50px;
+  height: 40px;
   text-align: center;
-  line-height: 50px;
+  line-height: 40px;
 }
 .box-arrows {
   width: 5%;
@@ -142,14 +172,18 @@ export default {
 .box-caret {
   width: 100%;
   cursor: pointer;
-  height: 50px;
-  line-height: 50px;
+  height: 40px;
+  line-height: 40px;
   border-bottom: 1px solid #dddddd;
+}
+.box-caret:hover {
+  opacity: 0.7;
+  background: #dddddd;
 }
 .box-amount {
   /* min-width: 120px; */
-  line-height: 50px;
-  height: 50px;
+  line-height: 40px;
+  height: 40px;
   text-align: center;
   vertical-align: middle;
 }

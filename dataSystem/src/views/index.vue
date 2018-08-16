@@ -78,12 +78,12 @@ export default {
           name: '劵排名',
           url: '/storeRanking',
           parentMenuId: '9'
-        },
-        {
-          name: '点击量',
-          url: '/storesSummary',
-          parentMenuId: '9'
         }
+        // {
+        //   name: '点击量',
+        //   url: '/storesSummary',
+        //   parentMenuId: '9'
+        // }
       ]
     }
   },

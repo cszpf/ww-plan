@@ -15,43 +15,41 @@
           <el-button class="passwd-button" type="warning" @click="submitForm">确认</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button class="passwd-button" type="info" plain>取消</el-button>
+          <el-button class="passwd-button" type="info" plain @click="cancel">取消</el-button>
         </el-form-item>
       </el-form>
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios'
 export default {
   name: 'passwd',
   data () {
-  	return{
-  		name: '',
-	}
+    return {
+      name: '',
+      oldpwd: '',
+      newpwd: '',
+      twice: ''
+    }
   },
-  methods:{
-  	submitForm(){
-  		let _this = this
-  		console.log(this.oldpwd)
-  		console.log(this.newpwd)
-  		console.log(this.twice)
-  		console.log({'oldpwd':this.oldpwd,'newpwd':this.newpwd,'twice':this.twice})
-  		const path = 'http://localhost:5000/api/pwd'
-      	axios.post(path, {'oldpwd':this.oldpwd,'newpwd':this.newpwd,'twice':this.twice})
-      	.then(function(response){
-			if(response.data.status=='ok'){
-				_this.$router.push({path: '/tableList'})
-			}
-			else{
-				_this.$message.error(response.data.status)
-			}
-			console.log(response);
-		})
-		.catch(function(error){
-			console.log(error);
-		})
+  methods: {
+    submitForm () {
+      const path = 'http://localhost:5000/api/pwd'
+      axios.post(path, {'oldpwd': this.oldpwd, 'newpwd': this.newpwd, 'twice': this.twice})
+        .then(function (response) {
+          if (response.data.status === 'ok') {
+            this.$router.push({path: '/tableList'})
+          } else {
+            this.$message.error(response.data.status)
+          }
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
+    cancel () {
+      this.$router.push({path: '/storesSummary'})
     }
   }
 }
