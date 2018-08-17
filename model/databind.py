@@ -50,8 +50,8 @@ class Databind:
         return {'OPERATOR_NAME':[template([i,_[0]],'OPERATOR_NAME') for i, _ in enumerate(result)]}
 
     def MERCHANT_ID(self, data):
-        sql = "SELECT merchant_id, merchant_name FROM merchant;"
-        result = self.connect.query(self.connect.fenqi, sql)
+        sql = "SELECT merchant_id, merchant_name FROM merchant WHERE merchant_name LIKE '%{}%';"
+        result = self.connect.query(self.connect.fenqi, sql.format(data['opt']['MERCHANT_NAME']))
         return {'MERCHANT_ID':[template(_,'MERCHANT_ID') for _ in result]}
 
     def SUBBRANCH_ID(self, data):
