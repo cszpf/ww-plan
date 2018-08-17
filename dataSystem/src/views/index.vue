@@ -5,9 +5,9 @@
            <el-col class="navTop" :span="24">
                <p class="title-content">运营统计系统</p>
                <div class="offDiv">
-                 <span class="titie-span">您好,小米</span>
+                 <span class="titie-span">您好,{{username}}</span>
                  <el-button size="small" type="warning"  @click="passwd" class="operating">修改密码</el-button>
-                 <el-button size="small" type="warning" class="operating">退出登录</el-button>
+                 <el-button size="small" type="warning" class="operating" @click="logOff">退出登录</el-button>
                </div>
            </el-col>
        </el-row>
@@ -84,8 +84,12 @@ export default {
         //   url: '/storesSummary',
         //   parentMenuId: '9'
         // }
-      ]
+      ],
+      username: ''
     }
+  },
+  created () {
+    this.username = sessionStorage.getItem('username');
   },
   methods: {
     handleSelect (key, keyPath) {
@@ -93,6 +97,20 @@ export default {
     },
     passwd () {
       this.$router.push({path: '/passwd'})
+    },
+    logOff () {
+      this.$confirm('此操作将退出登录, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '操作成功!'
+        })
+        sessionStorage.removeItem('username');
+        this.$router.push({path: '/login'})
+      }).catch(() => {})
     }
   }
 }

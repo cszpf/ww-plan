@@ -3,13 +3,13 @@
     <div class="passwd-content">
       <el-form>
         <el-form-item>
-          <el-input type="text" placeholder="原密码" v-model='oldpwd'>{{ oldpwd }}</el-input>
+          <el-input type="password" placeholder="原密码" v-model='oldpwd'>{{ oldpwd }}</el-input>
         </el-form-item>
         <el-form-item>
-          <el-input type="text" placeholder="新密码" v-model='newpwd'>{{ newpwd }}</el-input>
+          <el-input type="password" placeholder="新密码" v-model='newpwd'>{{ newpwd }}</el-input>
         </el-form-item>
         <el-form-item>
-          <el-input type="text" placeholder="请确认密码" v-model='twice'>{{ twice }}</el-input>
+          <el-input type="password" placeholder="请确认密码" v-model='twice'>{{ twice }}</el-input>
         </el-form-item>
         <el-form-item>
           <el-button class="passwd-button" type="warning" @click="submitForm">确认</el-button>
@@ -35,13 +35,16 @@ export default {
   },
   methods: {
     submitForm () {
+      let _this = this
       const path = 'http://localhost:5000/api/pwd'
       axios.post(path, {'oldpwd': this.oldpwd, 'newpwd': this.newpwd, 'twice': this.twice})
         .then(function (response) {
-          if (response.data.status === 'ok') {
-            this.$router.push({path: '/tableList'})
+          console.log(response)
+          if (response.statusText === 'OK') {
+            _this.$message({message: '修改成功', type: 'success'})
+            _this.$router.push({path: '/login'})
           } else {
-            this.$message.error(response.data.status)
+            _this.$message.error(response.data.status)
           }
         })
         .catch(function (error) {

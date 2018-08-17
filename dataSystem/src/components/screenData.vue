@@ -8,6 +8,7 @@
         </el-form-item>
         <el-form-item label="微区域 :">
           <span :class="[microareaindex===index?'admini':'','screen-span']" v-for="(item, index) in microarea" :key="item.id" @click="microareaData(item,index)">{{ item.name }}</span>
+          <!-- <span v-if="microarea.length==0" class="screen-span">暂无数据</span> -->
         </el-form-item>
         <el-form-item label="行业 :">
           <span :class="[tradeindex===index?'admini':'','screen-span']" v-for="(item, index) in trade" :key="item.id" @click="tradeData(item,index)">{{ item.name }}</span>
@@ -24,18 +25,18 @@
         <el-form-item label="门店 :" v-if="shop">
           <el-input class="sreem-input" v-model="form.name" size="mini" placeholder="输入门店"></el-input>
         </el-form-item>
-        <el-form-item label="门店属性 :">
-          <span :class="[storeAttributesindex===index?'admini':'','screen-span']" v-for="(item, index) in storeAttributes" :key="item.id" @click="storeAttributesData(item,index)">{{ item.name }}</span>
+        <el-form-item label="门店属性 :" v-if="storeAttributes">
+          <span :class="[storeAttributesindex===index?'admini':'','screen-span']" v-for="(item, index) in storeAttributesList" :key="item.id" @click="storeAttributesData(item,index)">{{ item.name }}</span>
         </el-form-item>
         <el-form-item label="日期 :">
-          <el-date-picker v-model="form.date" type="daterange" placeholder="选择日期" size="small" format="yyyy-MM-dd">
+          <el-date-picker v-model="date" type="daterange" placeholder="选择日期" size="small" format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
       </el-form>
       </div>
       <el-form class="filtro">
         <el-form-item label="已选择筛选条件 :">
-          <el-tag class="screen-tags" v-for="(tag, index) in tags" :key="tag.id" @close="handleClose(tag.type, index)" closable>{{ tag.name }}</el-tag>
+          <el-tag class="screen-tags" v-for="(tag, index) in tags" :key="tag.id" @close="handleClose(tag.type, index)" closable>{{ tag.name }}</el-tag><span class="tag-span">共有0个结果</span>
         </el-form-item>
       </el-form>
     </div>
@@ -53,54 +54,70 @@ export default {
       type: Boolean,
       default: true
     },
-    district: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    }
+    storeAttributes: {
+      type: Boolean,
+      default: true
+    },    
   },
   data () {
     return {
+      date: '',
       form: {
         name: '',
         date: ''
       },
-      adminiStrative: [
-        // 行政区
-        { name: '广州市番禺区', id: '1', type: 'adminiStrative' },
-        { name: '广州市白云区', id: '2', type: 'adminiStrative' },
-        { name: '广州市荔湾区', id: '3', type: 'adminiStrative' }
-      ],
+      district: [], // 行政区
       microarea: [], // 微区域
       trade: [], // 行业
       salesManager: [], // 销售经理
-      operationManager: [
-        // 运营经理
-        { name: '小意', id: '22', type: 'operationManager' },
-        { name: '小松', id: '23', type: 'operationManager' }
-      ],
-      storeAttributes: [
-        // 门店属性
-        { name: '活跃门店', id: '23', type: 'storeAttributes' },
-        { name: '沉默门店', id: '24', type: 'storeAttributes' }
-      ],
+      operationManager: [], // 运营经理
+      storeAttributesList: [
+        { id: 'active’', name: '活跃门店', type: 'SUBBRANCH_PROP' },
+        { id: 'silent’', name: '沉默门店', type: 'SUBBRANCH_PROP' }
+      ], // 门店属性
       adminiIndex: '', // 行政区
       microareaindex: '', // 微区域
       tradeindex: '', // 行业
       salesManagerindex: '', // 销售经理
       operationManagerindex: '', // 运营经理
       storeAttributesindex: '', // 门店属性
-      tags: []
+      tags: [],
+      postData: {
+        id: 'mdhz',
+        opt: {
+          'ADMIN_REGION_CODE': '', // 行政区
+          'MICRO_REGION_CODE': '', // 微区域
+          'SALE_NAME': '', // 销售经理
+          'MERCHANT_TYPE': '', // 行业
+          'OPERATOR_NAME': '' // 运营经理
+        },
+        date: ['2017-08-30', '2018-08-17']
+      }
     }
   },
   created () {},
   mounted () {
+    this.loadData('ADMIN_REGION_CODE') // 行政区
     this.loadData('MERCHANT_TYPE') // 行业
     this.loadData('SALE_NAME') // 销售经理
+    this.loadData('OPERATOR_NAME') // 运营经理
+    if (this.sogo) {
+      this.loadData('MERCHANT_ID') // 商户
+    }
+    // this.getData()
   },
   methods: {
-    loadData (idnmae) {
+    getData () {
+      // let _this = this
+      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: this.postData})
+        .then(function (response) {
+          console.log(response)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
+    loadData (idnmae) { // 筛选条件
       let _this = this
       console.log(idnmae)
       axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
@@ -109,11 +126,20 @@ export default {
           console.log(response.statusText === 'OK')
           if (response.statusText === 'OK') {
             console.log(response)
+            if (idnmae === 'ADMIN_REGION_CODE') {
+              _this.district = response.data.ADMIN_REGION_CODE ? response.data.ADMIN_REGION_CODE : ''
+            }
             if (idnmae === 'MERCHANT_TYPE') {
               _this.trade = response.data.MERCHANT_TYPE
             }
             if (idnmae === 'SALE_NAME') {
               _this.salesManager = response.data.SALE_NAME
+            }
+            if (idnmae === 'OPERATOR_NAME') {
+              _this.operationManager = response.data.OPERATOR_NAME
+            }
+            if (idnmae === 'SUBBRANCH_PROP') {
+              _this.storeAttributes = response.data.SUBBRANCH_PROP
             }
           } else {
             _this.$message.error('占无数据')
@@ -182,7 +208,7 @@ export default {
       // 运营经理
       this.operationManagerindex = index
       let operationManagerBl = false
-      let operationManagerType = 'operationManager'
+      let operationManagerType = 'OPERATOR_NAME'
       console.log(this.tags)
       this.screening(operationManagerBl, this.tags, data, operationManagerType)
     },
@@ -190,7 +216,7 @@ export default {
       // 门店属性
       this.storeAttributesindex = index
       let storeAttributesBl = false
-      let storeAttributesType = 'storeAttributes'
+      let storeAttributesType = 'SUBBRANCH_PROP'
       console.log(this.tags)
       this.screening(storeAttributesBl, this.tags, data, storeAttributesType)
     },
@@ -212,6 +238,13 @@ export default {
       this.tags.splice(index, 1)
       if (type === 'ADMIN_REGION_CODE') {
         this.adminiIndex = ''
+        this.tags.forEach((item, index) => {
+          if (item.type === 'MICRO_REGION_CODE') {
+            this.tags.splice(index, 1)
+            this.microareaindex = ''
+            this.microarea = []
+          }
+        })
       }
       if (type === 'MICRO_REGION_CODE') {
         this.microareaindex = ''
@@ -222,10 +255,10 @@ export default {
       if (type === 'SALE_NAME') {
         this.salesManagerindex = ''
       }
-      if (type === 'operationManager') {
+      if (type === 'OPERATOR_NAME') {
         this.operationManagerindex = ''
       }
-      if (type === 'storeAttributes') {
+      if (type === 'SUBBRANCH_PROP') {
         this.storeAttributesindex = ''
       }
     }
@@ -262,6 +295,10 @@ export default {
 }
 .filtro {
   margin: 15px 0;
+}
+.tag-span {
+  float: right;
+  margin-right: 10px;
 }
 </style>
 <style>

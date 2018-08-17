@@ -1,6 +1,6 @@
 <template>
   <div id="storesSummary">
-    <screenData :district='adminiStrative' :sogo="merchant" :shop="outlet"></screenData>
+    <screenData :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
     <div class="stores-table">
       <!-- <el-table class="screen-table" style="width:83%" :data="tableData3">
         <el-table-column fixed prop="date" label="指标" min-width="110"></el-table-column>
@@ -53,7 +53,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import screenData from '../components/screenData.vue'
 export default {
   data () {
@@ -89,6 +88,7 @@ export default {
       ],
       merchant: false,
       outlet: false,
+      attribute:false,
       pageNumber: 1,
       pageSize: 20,
       total: 0,
@@ -96,34 +96,11 @@ export default {
     }
   },
   created () {},
-  mounted () {
-    this.loadData('ADMIN_REGION_CODE')
-  },
+  mounted () {},
   components: {
     'screenData': screenData
   },
-  methods: {
-    loadData (idnmae) {
-      let _this = this
-      console.log(idnmae)
-      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
-        .then(function (response) {
-          console.log(response.statusText)
-          console.log(response.statusText === 'OK')
-          if (response.statusText === 'OK') {
-            if (idnmae === 'ADMIN_REGION_CODE') {
-              _this.adminiStrative = response.data.ADMIN_REGION_CODE ? response.data.ADMIN_REGION_CODE : ''
-            }
-            console.log(_this.adminiStrative)
-          } else {
-            _this.$message.error('占无数据')
-          }
-        })
-        .catch(function (error) {
-          console.log(error)
-        })
-    }
-  }
+  methods: {}
 }
 </script>
 

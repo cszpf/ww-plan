@@ -1,13 +1,19 @@
 <template>
-    <div id="commodityCoupons">商品用劵</div>
+    <div id="commodityCoupons">
+      <screenData :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
+    </div>
 </template>
 <script>
+import screenData from '../components/screenData.vue'
 export default {
   name: 'commodityCoupons',
   data () {
     return {
       name: 'commodityCoupons'
     }
-  }
+  },
+  components: {
+    'screenData': screenData
+  },
 }
 </script>
