@@ -39,7 +39,7 @@ class Export:
         self.connect = Connect()
 
     # 实现沉默门店表的在线生成
-    def cmmd(self, start_date, end_date, dir_name):
+    def cmmd(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放沉默门店表的目标文件夹
@@ -52,8 +52,14 @@ class Export:
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
         sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
-        FROM subbranch a,merchant b 
-        WHERE a.merchant_id=b.merchant_id """
+        FROM subbranch a, merchant b, merchant_industry c
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type"""
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
         for _sub in result:
             if _sub:
@@ -278,7 +284,7 @@ class Export:
         return df
 
     # 实现门店汇总表的在线生成
-    def mdhz(self, start_date, end_date, dir_name):
+    def mdhz(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放门店汇总表的目标文件夹
@@ -297,8 +303,14 @@ class Export:
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
         sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
-        FROM subbranch a,merchant b 
-        WHERE a.merchant_id=b.merchant_id """
+        FROM subbranch a,merchant b, merchant_industry c 
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type"""
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
         for _sub in result:
             if _sub:
@@ -317,7 +329,15 @@ class Export:
                 subdict[_sub[0]] = data
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
-            sql1 = """SELECT subbranch_id, create_time, average_assess_income FROM subbranch ORDER BY create_time"""
+            sql1 = """SELECT subbranch_id, create_time, average_assess_income
+                     FROM subbranch a, merchant b, merchant_industry c
+                     WHERE a.merchant_id = b.merchant_id AND b.merchant_type = c.merchant_type"""
+            if opt:
+                _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+                if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+                _temp.extend(["b.{}='{}'".format(i,j) \
+                    for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+                sql1 += ' AND ' + ' AND '.join(_temp)
             result1 = self.connect.query(self.connect.fenqi, sql1)
             _data = []
             newly_sub = accum_sub = 0
