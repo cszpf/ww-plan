@@ -56,7 +56,7 @@ class Databind:
 
     def SUBBRANCH_ID(self, data):
         sql = "SELECT subbranch_id, subbranch_name FROM subbranch WHERE merchant_id='{}';"
-        result = self.connect.query(self.connect.fenqi, sql.format(data['opt']['MERCHANT']))
+        result = self.connect.query(self.connect.fenqi, sql.format(data['opt']['MERCHANT_ID']))
         return {'SUBBRANCH_ID':[template(_,'SUBBRANCH_ID') for _ in result]}
 
 if __name__ == '__main__':
