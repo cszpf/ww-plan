@@ -104,7 +104,14 @@ def table_export():
     opt = data.get('opt', {})
     pages = data.get('page'); cols = data.get('columns')
     pages = 1 if pages * cols == 0 else pages * cols
-    _cols = [0]
+    if ids in ['mdhz', 'djl']:
+    	_cols = [0]
+    elif ids in ['qhz']:
+    	_cols = list(range(5))
+    elif ids in ['mdls', 'mdlszb']:
+    	_cols = list(range(10))
+    elif ids in ['khhz']:
+    	_cols = list(range(6))
     _cols.extend(list(range(pages, pages+cols)))
     if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
@@ -115,7 +122,9 @@ def table_export():
             datas = all2excel(start_date, end_date)[0][0]
         else:
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
-    return jsonify(datas.iloc[:, _cols])
+    if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
+    	_cols = list(range(len(datas.columns)))
+    return jsonify(datas.iloc[:, _cols].to_dict())
 
 @app.route('/api/databind', methods=['POST'])
 def databind():
