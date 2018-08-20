@@ -61,7 +61,7 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL """
         if opt:
             _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
             if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
@@ -125,7 +125,7 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time,AVERAGE_ASSESS_INCOME 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL """
         if opt:
             _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
             if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]

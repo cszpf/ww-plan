@@ -10,6 +10,7 @@ import datetime
 sys.path.append('./model')
 from databind import Databind
 from util import Export
+from util_lz import Export as Export_lz
 import pandas as pd
 cwd = os.getcwd()
 # jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
@@ -21,6 +22,7 @@ app = Flask(__name__,
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 _export = Export()
 _databind = Databind()
+_export_lz = Export_lz()
 
 def write_log():
     app.logger.info('info log')
@@ -100,11 +102,20 @@ def table_export():
     end_date = data['date'][1]
     ids = data['ids']
     opt = data.get('opt', {})
-    if ids != 'all':
-        datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
+    pages = data.get('page'); cols = data.get('columns')
+    pages = 1 if pages * cols == 0 else pages * cols
+    _cols = [0]
+    _cols.extend(list(range(pages, pages+cols)))
+    if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
+        datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
+        if ids in ['mdhz']:
+            datas = datas[0]
     else:
-        datas = all2excel(start_date, end_date)
-    return jsonify(datas)
+        if ids in ['all']:
+            datas = all2excel(start_date, end_date)[0][0]
+        else:
+            datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
+    return jsonify(datas[:, _cols])
 
 @app.route('/api/databind', methods=['POST'])
 def databind():

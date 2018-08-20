@@ -17,13 +17,14 @@ class Connect(connectTool.connect):
         db.close()
         return results
 
-    # 将行政区code映射成name
-    def region_code2name(self,code):
-        sql = "SELECT region_name FROM micro_region WHERE region_code='{code}'".format(code=code)
-        result = self.query(self.fenqi,sql)
-        if result:
-            return result[0][0]
-        return None
+    # 生成行政区、微区域code映射成name的表（字典）
+    def region_code2name(self):
+        sql = '''select region_code, region_name from micro_region'''
+        result = self.query(self.fenqi, sql)
+        dict = {}
+        for pair in result:
+            dict[pair[0]] = pair[1]
+        return dict
 
     # 查询对应标签的券的客单价的sql语句
     def coupons_avg(self, label_id, start_date, end_date):
@@ -74,25 +75,31 @@ class Connect(connectTool.connect):
         return ';'.join(labels) if len(labels) > 0 else '无'
 
     # 商户id对应名称
-    def mer_id2name(self, merchant_id):
-        sql = '''select short_name from merchant where merchant_id='{}';'''.format(merchant_id)
-        return self.query(self.fenqi, sql)[0][0]
+    def mer_id2name(self):
+        # sql = '''select short_name from merchant where merchant_id='{}';'''.format(merchant_id)
+        # return self.query(self.fenqi, sql)[0][0]
+        sql = '''select merchant_id, short_name from merchant'''
+        result = self.query(self.fenqi, sql)
+        dict = {}
+        for pair in result:
+            dict[pair[0]] = pair[1]
+        return dict
 
     # 查找帮发券的邻店
-    def get_LD(self, coupons_cfg_id):
+    def get_LD(self, coupons_cfg_id, dict):
         sql = '''select distinct merchant_id from coupons, coupons_promote cp
         where coupons.coupons_promote_id=cp.coupons_promote_id and coupons_config_id='{}';'''.format(coupons_cfg_id)
         results = self.query(self.coupons, sql)
         LD = []
         for result in results:
-            LD.append(self.mer_id2name(result[0]))
+            LD.append(dict[result[0]])
         return ';'.join(LD)
 
 class Export:
     def __init__(self):
         self.connect = Connect()
 
-    def shyq(self, start_date, end_date, dir_name):
+    def shyq(self, start_date, end_date, dir_name, opt={}):
         columns = ['商户','行政区', '微区域', '行业', '销售姓名', '运营姓名', '流水', '消费笔数', '客单价', '关注券领券数',
                    '关注券用券数', '关注券数量', '关注券客单价', '关注券使用率', '促活券领券数', '促活券用券数', '促活券数量',
                    '促活券客单价', '促活券使用率', '邻店券领券数', '邻店券客单价', '邻店券用券数', '帮邻店发券数',
@@ -105,12 +112,19 @@ class Export:
         sql0 = '''select merchant.merchant_id, admin_region_code, micro_region_code, merchant_type_name, sale_name, operator_name 
         from subbranch, merchant, merchant_industry where subbranch.merchant_id=merchant.merchant_id and 
         merchant.merchant_type=merchant_industry.merchant_type and sub_type=1 '''
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() if i not in ('MERCHANT_ID','MERCHANT_TYPE')]
+            _temp.extend(["merchant.{}='{}'".format(i,j) for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql0 += ' AND ' + ' AND '.join(_temp)
         result0 = self.connect.query(self.connect.fenqi, sql0)
         res0 = {}
-        for mer in result0:
-            res0[mer[0]]=[self.connect.region_code2name(mer[1]) if mer[1]!=None and mer[1]!=''else '-',
-                         self.connect.region_code2name(mer[2]) if mer[2]!=None and mer[2]!=''else '-',
-                         mer[3], mer[4] if mer[4]!=None and mer[4]!=''else '-', mer[5]if mer[5]!=None and mer[5]!=''else '-']
+        dict_region = self.connect.region_code2name()
+        mer = []  # mer是merchant_id的list
+        for _mer in result0:
+            res0[_mer[0]]=[dict_region[_mer[1]] if _mer[1]!=None and _mer[1]!=''else '-',
+                         dict_region[_mer[2]] if _mer[2]!=None and _mer[2]!=''else '-',
+                         _mer[3], _mer[4] if _mer[4]!=None and _mer[4]!=''else '-', _mer[5]if _mer[5]!=None and _mer[5]!=''else '-']
+            mer.append(_mer[0])
 
         # 计算商户流水、消费笔数、客单价(分别计算微信消费记录、储值卡消费记录)
         sql_wechat = '''(select merchant_id, sum(amount)as sum1, count(*)as num1 from merchant, wechat_pay_log as wpl, user
@@ -137,10 +151,8 @@ class Export:
         recharge_num, recharge_total from {} left join {} on merList.merchant_id=pay1.merchant_id left join {} on merList.merchant_id=
         pay2.merchant_id left join {} on merList.merchant_id=recharge.merchant_id'''.format(sql_mer, sql_wechat, sql_dc, sql_recharge)
         result1 = self.connect.query(self.connect.fenqi, sql1)
-        # mer是merchant_id的list
-        mer = [];   res1 = {}
+        res1 = {}
         for _mer in result1:
-            mer.append(_mer[0])
             res1[_mer[0]] = [_mer[1],_mer[2],_mer[3],Decimal(_mer[2]/_mer[3]).quantize(Decimal("0.00")) if _mer[3]!=0 else Decimal("0.00"), int(_mer[4]), _mer[5]]
             #res1词典的key为merchant_id, value为 列表[商户简称、商户流水、消费笔数、客单价、办卡数、办卡金额]
 
@@ -229,7 +241,7 @@ class Export:
         # df.to_csv(os.path.join(dir_name,'shyq.csv'),index=False,encoding='gbk',sep=',')
         return df, '商户用券详情'
 
-    def qpm(self, start_date, end_date, dir_name):
+    def qpm(self, start_date, end_date, dir_name, opt={}):
         columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
                    'TOP10\n促活券名称', 'TOP10\n促活券使用数', 'TOP10\n促活券商户名称', 'TOP10\n促活券标签', 'TOP10\n促活券客单价',
                    'TOP10\n邻店券名称', 'TOP10\n邻店券使用数', 'TOP10\n邻店券的发券商户名称', 'TOP10\n邻店券的用券商户名称',
@@ -269,24 +281,25 @@ class Export:
         for m in result_LD2:
             LD_avg[m[0]]=round(m[1], 2)
 
+        dict_id2name = self.connect.mer_id2name()
         for i in range(10):
             _data = []
             _data.append("TOP{}".format(i+1))
             if i < len(result_GZ1):
                 _data.extend(result_GZ1[i][0:2])
-                _data.extend([self.connect.mer_id2name(result_GZ1[i][2]), self.connect.cou_cfg_id2label(result_GZ1[i][-1]),
+                _data.extend([dict_id2name[result_GZ1[i][2]], self.connect.cou_cfg_id2label(result_GZ1[i][-1]),
                               GZ_avg[result_GZ1[i][2]]])   #商户名称、标签、客单价
             else:
                 _data.extend(['-', '-', '-', '-', '-'])
             if i < len(result_CH1):
                 _data.extend(result_CH1[i][0:2])
-                _data.extend([self.connect.mer_id2name(result_CH1[i][2]), self.connect.cou_cfg_id2label(result_CH1[i][-1]),
+                _data.extend([dict_id2name[result_CH1[i][2]], self.connect.cou_cfg_id2label(result_CH1[i][-1]),
                               GZ_avg[result_CH1[i][2]]])
             else:
                 _data.extend(['-', '-', '-', '-', '-'])
             if i < len(result_LD1):
                 _data.extend(result_LD1[i][0:2])
-                _data.extend([self.connect.get_LD(result_LD1[i][-1]), self.connect.mer_id2name(result_LD1[i][2]),
+                _data.extend([self.connect.get_LD(result_LD1[i][-1], dict_id2name), dict_id2name[result_LD1[i][2]],
                               self.connect.cou_cfg_id2label(result_LD1[i][-1]), LD_avg[result_LD1[i][2]]])
             else:
                 _data.extend(['-', '-', '-', '-', '-', '-'])
@@ -296,12 +309,13 @@ class Export:
         # df.to_csv(os.path.join(dir_name, 'qpm.csv'), index=False, encoding='gbk', sep=',')
         return df, '券排名'
 
-    def ydqxq(self, start_date, end_date, dir_name):
+    def ydqxq(self, start_date, end_date, dir_name, opt={}):
         columns = ['日期', '名称', '商户', '标签', '起始日期之前的领券量', '截止日期之前的领券量', '发放结束日期']
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
         all_data1 = [];all_data2 = [];all_data3 = [];   #快到期、修改、下线
         sql_coupons_num = '''select count(*) from coupons where create_time<'{}' and coupons_config_id='{}';'''
+        dict_id2name = self.connect.mer_id2name()
         #快到期
         for i in range((end_date-start_date).days):
             curr_date = start_date + datetime.timedelta(i)  #不含当天,当天零时
@@ -314,7 +328,7 @@ class Export:
                 get_num = self.connect.query(self.connect.coupons, sql_kdq_num)[0][0]
                 sql_kdq_num2 = sql_coupons_num.format(end_date, result[x][2])
                 get_num2 = self.connect.query(self.connect.coupons, sql_kdq_num2)[0][0]
-                all_data1.append([curr_date.strftime("%y%m%d"), result[x][0], self.connect.mer_id2name(result[x][1]),
+                all_data1.append([curr_date.strftime("%y%m%d"), result[x][0], dict_id2name[result[x][1]],
                               self.connect.cou_cfg_id2label(result[x][2]), get_num, get_num2, result[x][3].strftime("%y%m%d")])
         #修改
         sql_xg = '''select update_time, name, merchant_id, coupons_config_id, publish_end_date 
@@ -325,7 +339,7 @@ class Export:
             get_num = self.connect.query(self.connect.coupons, sql_xg)[0][0]
             sql_xg = sql_coupons_num.format(end_date, res[3])
             get_num2 = self.connect.query(self.connect.coupons, sql_xg)[0][0]
-            all_data2.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
+            all_data2.append([res[0].strftime("%y%m%d"), res[1], dict_id2name[res[2]],
                               self.connect.cou_cfg_id2label(res[3]),get_num, get_num2, res[4].strftime("%y%m%d")])
         #下线
         sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config 
@@ -336,7 +350,7 @@ class Export:
             get_num = self.connect.query(self.connect.coupons, sql_xx)[0][0]
             sql_xx = sql_coupons_num.format(end_date, res[3])
             get_num2 = self.connect.query(self.connect.coupons, sql_xx)[0][0]
-            all_data3.append([res[0].strftime("%y%m%d"), res[1], self.connect.mer_id2name(res[2]),
+            all_data3.append([res[0].strftime("%y%m%d"), res[1], dict_id2name[res[2]],
                               self.connect.cou_cfg_id2label(res[3]), get_num, get_num2, res[0].strftime("%y%m%d")])
 
         all_data = [all_data1, all_data2, all_data3];   all_df = []
@@ -351,9 +365,11 @@ class Export:
 
 def main():
     export = Export()
-    # export.shyq('2018-6-20','2018-7-21','./')
+    # opt = {'MERCHANT_ID':'yifanmeirongMerchant'}
+    # opt = {'MERCHANT_TYPE':1}
+    export.shyq('2018-6-20','2018-7-21','./', opt)
     # export.qpm('2018-7-1','2018-7-21','./')
-    export.ydqxq('2018-6-1', '2018-7-16', './')
+    # export.ydqxq('2018-6-1', '2018-7-16', './')
 
 if __name__ == '__main__':
     main()
