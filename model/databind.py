@@ -42,12 +42,12 @@ class Databind:
     def SALE_NAME(self, data):
         sql = "SELECT DISTINCT sale_name FROM subbranch WHERE sale_name IS NOT NULL;"
         result = self.connect.query(self.connect.fenqi, sql)
-        return {'SALE_NAME':[template([i,_[0]],'SALE_NAME') for i, _ in enumerate(result)]}
+        return {'SALE_NAME':[template(['SALE_NAME'+str(i),_[0]],'SALE_NAME') for i, _ in enumerate(result)]}
 
     def OPERATOR_NAME(self, data):
         sql = "SELECT DISTINCT operator_name FROM subbranch WHERE sale_name IS NOT NULL;"
         result = self.connect.query(self.connect.fenqi, sql)
-        return {'OPERATOR_NAME':[template([i,_[0]],'OPERATOR_NAME') for i, _ in enumerate(result)]}
+        return {'OPERATOR_NAME':[template(['OPERATOR_NAME'+str(i),_[0]],'OPERATOR_NAME') for i, _ in enumerate(result)]}
 
     def MERCHANT_ID(self, data):
         sql = "SELECT merchant_id, merchant_name FROM merchant WHERE merchant_name LIKE '%{}%';"
