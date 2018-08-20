@@ -115,7 +115,7 @@ def table_export():
             datas = all2excel(start_date, end_date)[0][0]
         else:
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
-    return jsonify(datas[:, _cols])
+    return jsonify(datas.iloc[:, _cols])
 
 @app.route('/api/databind', methods=['POST'])
 def databind():
