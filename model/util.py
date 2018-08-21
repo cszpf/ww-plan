@@ -1,4 +1,5 @@
 #encoding=utf-8
+from flask import jsonify
 import MySQLdb
 import datetime
 import os
@@ -233,7 +234,8 @@ def main():
     'SUBBRANCH_ID':'91dc20c9adac4035a4c1b7964792b043',
     'SUBBRANCH_PROP':'active'
     }
-    print(export.mdlszb('2018-6-1','2018-6-3','./', opt)[0])
+    print(export.mdls('2018-6-1','2018-6-3','./', {})[0].to_dict())
+    # print(jsonify(export.mdlszb('2018-6-1','2018-6-3','./', {})[0].to_json()))
 
 if __name__ == '__main__':
     main()
