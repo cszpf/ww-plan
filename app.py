@@ -127,7 +127,7 @@ def table_export():
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
     if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
     	_cols = list(range(len(datas.columns)))
-    return datas.iloc[:, _cols].to_json(force_ascii=False)
+    return datas.iloc[:, _cols].to_json(force_ascii=False, orient='records')
 
 @app.route('/api/databind', methods=['POST'])
 def databind():
