@@ -103,15 +103,17 @@ def table_export():
     ids = data['ids']
     opt = data.get('opt', {})
     pages = data.get('page'); cols = data.get('columns')
-    pages = 1 if pages * cols == 0 else pages * cols
+    pages = pages * cols
     if ids in ['mdhz', 'djl']:
-    	_cols = [0]
+    	_cols = [0]; pages += 1
     elif ids in ['qhz']:
-    	_cols = list(range(5))
+    	_cols = list(range(5)); pages += 5
     elif ids in ['mdls', 'mdlszb']:
-    	_cols = list(range(10))
+    	_cols = list(range(10)); pages += 10
     elif ids in ['khhz']:
-    	_cols = list(range(6))
+    	_cols = list(range(6)); pages += 6
+    else:
+    	_cols = []
     _cols.extend(list(range(pages, pages+cols)))
     if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
