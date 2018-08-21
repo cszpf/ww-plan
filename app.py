@@ -126,10 +126,10 @@ def table_export():
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
     if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
     	_cols = list(range(len(datas.columns)))
-   	else:
-   		x = pages + cols
-   		x = x if x <= len(datas.columns) else len(datas.columns)
-   		_cols.extend(list(range(pages, x)))
+    else:
+    	x = pages + cols
+    	x = x if x <= len(datas.columns) else len(datas.columns)
+    	_cols.extend(list(range(pages, x)))
     return jsonify(dataformat(datas.iloc[:, _cols]))
 
 @app.route('/api/databind', methods=['POST'])
