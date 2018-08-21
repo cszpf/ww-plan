@@ -115,7 +115,6 @@ def table_export():
     	_cols = list(range(6)); pages += 6
     else:
     	_cols = []
-    _cols.extend(list(range(pages, pages+cols)))
     if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
         if ids in ['mdhz']:
@@ -127,13 +126,21 @@ def table_export():
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
     if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
     	_cols = list(range(len(datas.columns)))
-    return datas.iloc[:, _cols].to_json(force_ascii=False, orient='records')
+   	else:
+   		x = pages + cols
+   		x = x if x <= len(datas.columns) else len(datas.columns)
+   		_cols.extend(list(range(pages, x)))
+    return jsonify(dataformat(datas.iloc[:, _cols]))
 
 @app.route('/api/databind', methods=['POST'])
 def databind():
 	data = eval(request.data)
 	write_log()
 	return jsonify(eval('''_databind.{ids}(data)'''.format(ids=data['id'])))
+
+def dataformat(datas):
+	_json = [{'_key':i, '_data':eval(df[i].to_json(orient='records'))} for i in datas.columns]
+	return _json
 
 def data2excel(datas, ids):
     if not os.path.exists('./static'):
