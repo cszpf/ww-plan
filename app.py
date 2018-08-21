@@ -102,6 +102,7 @@ def table_export():
     end_date = data['date'][1]
     ids = data['ids']
     opt = data.get('opt', {})
+    opt = {i:j for i, j in opt.items() if j != ''}
     pages = data.get('page'); cols = data.get('columns')
     pages = pages * cols
     if ids in ['mdhz', 'djl']:
