@@ -51,9 +51,9 @@ class Export:
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
-        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
+        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,b.merchant_type 
         FROM subbranch a, merchant b, merchant_industry c
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type"""
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL"""
         if opt:
             _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
             if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
@@ -102,7 +102,7 @@ class Export:
         return df
 
     # 实现活跃门店表的在线生成
-    def hymd(self, start_date, end_date, dir_name):
+    def hymd(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放活跃门店表的目标文件夹
@@ -114,9 +114,15 @@ class Export:
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
-        sql1 = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
-        FROM subbranch a,merchant b 
-        WHERE a.merchant_id=b.merchant_id """
+        sql1 = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,b.merchant_type 
+        FROM subbranch a,merchant b,merchant_industry c 
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type=c.merchant_type AND a.create_time IS NOT NULL"""
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql1 += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
@@ -164,7 +170,7 @@ class Export:
         return df
 
     # 实现异动商户表的在线生成
-    def ydsh(self, start_date, end_date, dir_name):
+    def ydsh(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放异动商户表的目标文件夹
@@ -177,11 +183,20 @@ class Export:
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
         sql1 = """SELECT a.merchant_id, short_name, update_time
-        FROM fenqi.merchant a, coupons.coupons_config b
-        WHERE a.merchant_id = b.merchant_id"""
+        FROM fenqi.merchant a, coupons.coupons_config b, fenqi.subbranch c, fenqi.merchant_industry d
+        WHERE a.merchant_id = b.merchant_id AND a.merchant_id = c.merchant_id 
+        AND a.merchant_type = d.merchant_type AND c.sub_type = 1 AND c.create_time IS NOT NULL """
         sql2 = """SELECT a.merchant_id, short_name, b.create_time
-        FROM merchant a, merchant_product b
-        WHERE a.merchant_id = b.merchant_id""" 
+        FROM merchant a, merchant_product b, subbranch c, merchant_industry d
+        WHERE a.merchant_id = b.merchant_id AND a.merchant_id = c.merchant_id
+        AND a.merchant_type = d.merchant_type AND c.sub_type = 1 AND c.create_time IS NOT NULL """
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["a.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql1 += ' AND ' + ' AND '.join(_temp) 
+            sql2 += ' AND ' + ' AND '.join(_temp)
         result1 = self.connect.query(self.connect.fenqi, sql1)
         result2 = self.connect.query(self.connect.fenqi, sql2)
         data.extend(result1)
@@ -202,7 +217,7 @@ class Export:
         return df
 
     # 实现流失商户表的在线生成
-    def lssh(self, start_date, end_date, dir_name):
+    def lssh(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放流失商户表的目标文件夹
@@ -215,9 +230,16 @@ class Export:
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
-        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,a.merchant_id,merchant_type 
-        FROM subbranch a,merchant b 
-        WHERE a.merchant_id=b.merchant_id """
+        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,a.merchant_id,b.merchant_type 
+        FROM subbranch a,merchant b, merchant_industry c 
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type
+        AND a.create_time IS NOT NULL """
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
         for _sub in result:
             if _sub:
@@ -293,18 +315,18 @@ class Export:
         '户均运营流水', '户均流水占比', '活跃门店数量', '活跃门店占比', '沉默门店数量', '异动商户数量', '流失商户数量']
         all_data = []
         subdict = {}
-        hymd_data = self.hymd(start_date, end_date, dir_name)
-        cmmd_data = self.cmmd(start_date, end_date, dir_name)
-        ydsh_data = self.ydsh(start_date, end_date, dir_name)
-        lssh_data = self.lssh(start_date, end_date, dir_name)
+        hymd_data = self.hymd(start_date, end_date, dir_name, opt)
+        cmmd_data = self.cmmd(start_date, end_date, dir_name, opt)
+        ydsh_data = self.ydsh(start_date, end_date, dir_name, opt)
+        lssh_data = self.lssh(start_date, end_date, dir_name, opt)
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
-        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,merchant_type 
+        sql = """SELECT subbranch_id,subbranch_name,a.create_time,short_name,b.merchant_type 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type"""
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL"""
         if opt:
             _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
             if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
@@ -329,9 +351,9 @@ class Export:
                 subdict[_sub[0]] = data
         for i in range((end_date-start_date).days):
             x = start_date + datetime.timedelta(i)
-            sql1 = """SELECT subbranch_id, create_time, average_assess_income
+            sql1 = """SELECT subbranch_id, a.create_time, average_assess_income
                      FROM subbranch a, merchant b, merchant_industry c
-                     WHERE a.merchant_id = b.merchant_id AND b.merchant_type = c.merchant_type"""
+                     WHERE a.merchant_id = b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL"""
             if opt:
                 _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
                 if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
@@ -393,6 +415,7 @@ class Export:
             all_data.append(_data)
         df = pd.DataFrame(all_data,index = indexs, columns = pd.Index(columns, name = '指标'))
         df = df.stack().unstack(0)
+        #df.to_csv('mdhz.csv',index=False,encoding='gbk', sep=',')
         return [df,hymd_data,cmmd_data,ydsh_data,lssh_data],['门店汇总','活跃门店','沉默门店','异动商户','流失商户']
 
 
@@ -404,7 +427,7 @@ def main():
     #export.cmmd('2018-6-1', '2018-6-10', './')
     #export.hymd('2018-8-1','2018-8-15','./')
     #export.ydsh('2018-6-1','2018-6-10','./')
-    export.lssh('2018-7-11','2018-7-28','./')
-    #export.mdhz('2018-6-1','2018-6-10','./')
+    #export.lssh('2018-7-11','2018-7-28','./')
+    export.mdhz('2018-8-18','2018-8-21','./')
 if __name__ == '__main__':
     main()
