@@ -22,7 +22,6 @@ class Connect(connectTool.connect):
             return result[0][0]
         return None
 
-
 class Export:
     def __init__(self):
         self.connect = Connect()
@@ -45,7 +44,7 @@ class Export:
         if opt:
             _temp = ["{}='{}'".format(i,j) for i,j in opt.items() if i not in ('MERCHANT_ID','MERCHANT_TYPE')]
             _temp.extend(["b.{}='{}'".format(i,j) for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
-        sql1 += ' AND ' + ' AND '.join(_temp)
+            sql1 += ' AND ' + ' AND '.join(_temp)
         sql1result = self.connect.query(self.connect.fenqi, sql1)
         
         for _sub in sql1result:
