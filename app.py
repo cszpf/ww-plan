@@ -139,7 +139,7 @@ def databind():
 	return jsonify(eval('''_databind.{ids}(data)'''.format(ids=data['id'])))
 
 def dataformat(datas):
-	_json = [{'_key':i, '_data':eval(datas[i].to_json(orient='records'))} for i in datas.columns]
+	_json = [{'_key':i, '_data':list(datas[i])} for i in datas.columns]
 	return _json
 
 def data2excel(datas, ids):
