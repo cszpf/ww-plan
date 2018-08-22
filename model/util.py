@@ -225,7 +225,7 @@ class Export:
             df1 = pd.merge(df1,df2,on='受访页面',how='outer', copy=False).fillna(0)
             click.write_csv(df1, path)
         option = ['受访页面']
-        option.extend(df1.columns[1:][[i<=end_date and i>=start_date for i in df1.columns[1:]]])
+        option.extend(df1.columns[1:][[i<end_date and i>=start_date for i in df1.columns[1:]]])
         return df1[option], '点击量'
 
 def main():

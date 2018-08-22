@@ -54,7 +54,7 @@ class Export:
             _temp.extend(["b.{}='{}'".format(i, j)  for i, j in opt.items() if i in ('MERCHANT_ID', 'MERCHANT_TYPE')])
             sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
-        print(result)
+        # print(result)
         data_qqd = []
         if opt.get('ADMIN_REGION_CODE','-')!='-':
             data_qqd.append(self.connect.region_code2name(opt.get('ADMIN_REGION_CODE')))
@@ -368,7 +368,7 @@ class Export:
             _temp.extend(["b.{}='{}'".format(i, j) for i, j in opt.items() if i in ('MERCHANT_ID', 'MERCHANT_TYPE')])
             sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
-        print(result)
+        # print(result)
         data_qqd = []
         if opt.get('MICRO_REGION_CODE', '-') != '-':
             data_qqd.append(self.connect.region_code2name(opt.get('MICRO_REGION_CODE')))
