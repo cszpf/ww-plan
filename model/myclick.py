@@ -72,7 +72,7 @@ def preDate(startDate1='2018-06-15', endDate1=TODAY):
     today = endDate1 if type(endDate1) is datetime.date else datetime.date(splitDate(endDate1)[0],splitDate(endDate1)[1],splitDate(endDate1)[2])
     print('Starting to crawl data....')
     results = None; rules = getRule()
-    for i in tqdm(range((today - startdate).days+1)):
+    for i in tqdm(range((today - startdate).days)):
         date = startdate + datetime.timedelta(i)
         result = getDateClick(date.strftime('%Y-%m-%d'), rules)
         # break
