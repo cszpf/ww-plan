@@ -82,7 +82,8 @@ def export():
     data = eval(request.data)
     write_log()
     start_date = data['date'][0]
-    end_date = data['date'][1]
+    end_date = datetime.datetime.strptime(data['date'][1], '%Y-%m-%d').date() + datetime.timedelta(1)
+    end_date = end_date.strftime('%Y-%m-%d')
     ids = data['ids']
     opt = data.get('opt', {})
     if ids != 'all':
