@@ -28,8 +28,8 @@ class Export:
     # 实现门店流水表的在线生成
 
     def shqxq(self, start_date, end_date, dir_name, opt={}):
-        #enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date() + datetime.timedelta(1)
-        #startdate = enddate - datetime.timedelta(14)
+        end_date1 = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()+datetime.timedelta(1)
+        #这样子是为了方便下面查询在起始日期和截至日期期间的领券数和用券数，因为sql语句这里并不包括最后一天，所以加1
         enddate = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         startdate = enddate - datetime.timedelta(14)
         enddate1 = enddate + datetime.timedelta(1)
@@ -96,7 +96,7 @@ class Export:
                 bq_yq={}#装标签的name和用券数
                 sql3="""SELECT coupons_config_id from coupons_config
                         WHERE merchant_id='{0}'""".format(_sub[0])
-                sql3result = self.connect.query(self.connect.coupons, sql3)#得到每一个门店的优惠券配置id
+                sql3result = self.connect.query(self.connect.coupons, sql3)#得到每一个商户的优惠券配置id
                 for pzid in sql3result:
                     if pzid:
                         sql4="""SELECT label_id 
@@ -113,28 +113,33 @@ class Export:
                                 sql6result = self.connect.query(self.connect.coupons, sql6)  # 得到该标签对应多少个优惠券配置id
                                 for i in sql6result:
                                     if i:
-                                        sql7="""SELECT COUNT(*) FROM coupons
-                                                        WHERE coupons_config_id='{0}'
-                                                        AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate1)
-                                        sql7result = self.connect.query(self.connect.coupons, sql7)#得到该配置id有多少张券被领了
-                                        sql8="""SELECT COUNT(*) FROM coupons
-                                                WHERE coupons_config_id='{0}' and `status`=1
-                                                AND create_time between '{1}' and '{2}'""".format(i[0],startdate,enddate1)
-                                        sql8result = self.connect.query(self.connect.coupons, sql8)  # 得到该配置id有多少张券被用了
-                                        bq_lq.update({sql5result[0][0]:sql7result[0][0]})
-                                        bq_yq.update({sql5result[0][0]:sql8result[0][0]})
+                                        sql6_6="""select merchant_id from coupons_config
+                                                    WHERE coupons_config_id='{0}'""".format(i[0])
+                                        sql6_6result = self.connect.query(self.connect.coupons, sql6_6)#返回该优惠券配置id属于哪个商户
+                                        if sql6_6result[0][0]==_sub[0]:#如果为本循环下的商户，则计算该标签的领券数和用券数目
+                                            sql7="""SELECT COUNT(*) FROM coupons
+                                                            WHERE coupons_config_id='{0}'
+                                                            AND create_time between '{1}' and '{2}'""".format(i[0],start_date,end_date1)
+                                            sql7result = self.connect.query(self.connect.coupons, sql7)#得到该配置id有多少张券被领了
+                                            sql8="""SELECT COUNT(*) FROM coupons
+                                                    WHERE coupons_config_id='{0}' and `status`=1
+                                                    AND create_time between '{1}' and '{2}'""".format(i[0],start_date,end_date1)
+                                            sql8result = self.connect.query(self.connect.coupons, sql8)  # 得到该配置id有多少张券被用了
+                                            bq_lq.update({sql5result[0][0]:sql7result[0][0]})
+                                            bq_yq.update({sql5result[0][0]:sql8result[0][0]})
                 countq=1
                 for bq,lq in bq_lq.items():
                     if bq:
                         label1='券{0}标签'.format(countq)
-                        label2='券{0}领券数/用券数'.format(countq)
+                        label2='券{0}领券数\用券数'.format(countq)
                         if label1 not in columns:
                             columns.append('券{0}标签'.format(countq))
                         if label2 not in columns:
-                            columns.append('券{0}领券数/用券数'.format(countq))
+                            columns.append('券{0}领券数\用券数'.format(countq))
                         data.append(bq)
-                        d=str(lq)+'/'+str(bq_yq.get(bq))
+                        d=str(lq)+'\\'+str(bq_yq.get(bq))
                         data.append(d)
+                        #print("商户是：{2},标签是：{0}，领券数是：{1}".format(bq,d,_sub[2]))
                         countq=countq+1
                 #print(data)
             all_data.append(data)
@@ -159,7 +164,7 @@ class Export:
         top = ['TOP1', 'TOP2', 'TOP3', 'TOP4', 'TOP5', 'TOP6', 'TOP7', 'TOP8', 'TOP9', 'TOP10', 'TOP10门店流水总比重']
         all_data.append(top)
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()+ datetime.timedelta(1)
         sql = """SELECT subbranch_id,subbranch_name,create_time,state
                 FROM subbranch 
                 where create_time is not null and state=2"""
@@ -331,11 +336,12 @@ class Export:
 def main():
     export = Export()
     opt = {
-        'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043',
+        'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043'
     }
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
-    export.shqxq('2018-5-18','2018-8-28', r'\Users\16538\Desktop',opt)
+    #export.shqxq('2017-5-18','2018-8-28', r'\Users\16538\Desktop', opt)
+    #export.shqxq('2018-6-18', '2018-8-28', r'\Users\qiqi\Desktop', opt)
+    export.mdpm('2016-1-03', '2018-05-07', r'\Users\16538\Desktop')
 
-    #export.mdpm('2016-1-03', '2018-7-28', r'\Users\qiqi\Desktop')
 if __name__ == '__main__':
     main()
