@@ -65,7 +65,7 @@ export default {
     },
     commodityCouponsData () {
       console.log('商户用劵')
-      this.getData({'ids': 'shyq', 'date': this.date})
+      this.checkDate({'ids': 'shyq', 'date': this.date})
     },
     securitiesSummaryData () {
       console.log('劵汇总')
@@ -85,7 +85,7 @@ export default {
     },
     pageviewData () {
       console.log('点击量')
-      this.getData({'ids': 'djl', 'date': this.date})
+      this.checkDate({'ids': 'djl', 'date': this.date})
     },
     gotoIndex () {
       let _this = this
@@ -102,7 +102,6 @@ export default {
       document.body.removeChild(link)
     },
     getData (datas) {
-      let _this = this
       axios({method: 'post', url: 'http://localhost:5000/api/export', data: datas, responseType: 'blob'})
         .then(response => {
           this.download(response, datas['ids'])
@@ -118,9 +117,9 @@ export default {
         let year = date.getUTCFullYear()
         let month = date.getUTCMonth() + 1
         let day = date.getUTCDate()
-        let today = year + '-' + month + '-' + day
         if (month < 10) month = '0' + month
         if (day < 10) day = '0' + day
+        let today = year + '-' + month + '-' + day
         if (date1[0] > date1[1]) {
           this.$message.error('起始日期不能大于结束日期')
         } else if (date1[1] > today) {
