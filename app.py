@@ -140,8 +140,9 @@ def databind():
 	return jsonify(eval('''_databind.{ids}(data)'''.format(ids=data['id'])))
 
 def dataformat(datas):
-	_json = [{'_key':i, '_data':list(datas[i])} for i in datas.columns]
-	return _json
+    datas = datas.astype(str)
+    _json = [{'_key':i, '_data':list(datas[i])} for i in datas.columns]
+    return _json
 
 def data2excel(datas, ids):
     if not os.path.exists('./static'):

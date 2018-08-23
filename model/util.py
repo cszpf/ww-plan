@@ -183,7 +183,8 @@ class Export:
     
     def shyq(self, start_date, end_date, dir_name, opt={}):
         yj_Export = yj.Export()
-        return yj_Export.shyq(start_date, end_date, dir_name)
+        _df, _name = yj_Export.shyq(start_date, end_date, dir_name)
+        return _df, _name
 
     def qpm(self, start_date, end_date, dir_name, opt={}):
         yj_Export = yj.Export()
@@ -230,11 +231,12 @@ class Export:
 
 def main():
     export = Export()
-    opt = {
-    'SUBBRANCH_ID':'91dc20c9adac4035a4c1b7964792b043',
-    'SUBBRANCH_PROP':'active'
-    }
-    print(export.mdls('2018-6-1','2018-6-3','./', {})[0].to_dict())
+    # opt = {
+    # 'SUBBRANCH_ID':'91dc20c9adac4035a4c1b7964792b043',
+    # 'SUBBRANCH_PROP':'active'
+    # }
+    # print(export.mdls('2018-6-1','2018-6-3','./', {})[0].to_dict())
+    export.shyq('2018-6-1','2018-6-3','./')
     # print(jsonify(export.mdlszb('2018-6-1','2018-6-3','./', {})[0].to_json()))
 
 if __name__ == '__main__':
