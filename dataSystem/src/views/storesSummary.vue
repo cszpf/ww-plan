@@ -1,6 +1,6 @@
 <template>
   <div id="storesSummary">
-    <screenData :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
+    <screenData v-on:fullConditions='loadData' :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
     <div class="stores-table">
       <div class="box">
         <div class="box-a">
@@ -27,6 +27,7 @@
 
 <script>
 import screenData from '../components/screenData.vue'
+import axios from 'axios'
 export default {
   data () {
     return {
@@ -73,7 +74,19 @@ export default {
   components: {
     'screenData': screenData
   },
-  methods: {}
+  methods: {
+    loadData (data) {
+      console.log(data)
+      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: data})
+        .then(response => {
+          console.log(response)
+          console.log(response.data)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    }
+  }
 }
 </script>
 

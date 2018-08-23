@@ -4,7 +4,7 @@
       <el-form ref="form" :model="form" label-width="80px" class="screen">
         <el-form-item label="行政区 :">
           <span :class="[adminiIndex===index?'admini':'','screen-span']" v-for="(item, index) in district" :key="item.id" @click="adminiStrativeData(item, index)">{{ item.name }}</span>
-          <el-button class="guidetable" type="success" size="small">导表</el-button>
+          <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button>
         </el-form-item>
         <el-form-item label="微区域 :">
           <span :class="[microareaindex===index?'admini':'','screen-span']" v-for="(item, index) in microarea" :key="item.id" @click="microareaData(item,index)">{{ item.name }}</span>
@@ -145,7 +145,6 @@ export default {
     let today = new Date()
     let lastMonth = new Date(today.getTime() - 3600 * 1000 * 24 * 30)
     this.date.push(this.formatDate(lastMonth), this.formatDate(today))
-    console.log(this.date)
     this.postData.date = this.date
   },
   mounted () {
@@ -157,7 +156,26 @@ export default {
     // this.getData()
   },
   methods: {
-    formatDate  (date) {
+    download (data, ids) {
+      let url = window.URL.createObjectURL(new Blob([data.data]))
+      let link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      link.setAttribute('download', '' + ids + '.xlsx')
+
+      document.body.appendChild(link)
+      link.click()
+    },
+    gotoData () {
+      axios({method: 'post', url: 'http://localhost:5000/api/export', data: this.postData, responseType: 'blob'})
+        .then(response => {
+          this.download(response, this.postData['ids'])
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
+    formatDate  (date) { // 日期格式化
       let y = date.getFullYear()
       let m = date.getMonth() + 1
       m = m < 10 ? '0' + m : m
@@ -166,7 +184,6 @@ export default {
       return y + '-' + m + '-' + d
     },
     dateData () {
-      console.log(this.date)
       this.postData.date = this.date
       this.$emit('fullConditions', this.postData)
     },
@@ -174,9 +191,7 @@ export default {
       let _this = this
       axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MERCHANT_ID', 'opt': {'MERCHANT_NAME': this.contact}}})
         .then(function (response) {
-          console.log(response)
           _this.contactList = response.data.MERCHANT_ID
-          console.log(_this.contactList)
         })
         .catch(function (error) {
           console.log(error)
@@ -194,13 +209,9 @@ export default {
     },
     loadData (idnmae) { // 筛选条件
       let _this = this
-      console.log(idnmae)
       axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
         .then(function (response) {
-          console.log(response.statusText)
-          console.log(response.statusText === 'OK')
           if (response.statusText === 'OK') {
-            console.log(response)
             if (idnmae === 'ADMIN_REGION_CODE') {
               _this.district = response.data.ADMIN_REGION_CODE ? response.data.ADMIN_REGION_CODE : ''
             }
@@ -238,15 +249,12 @@ export default {
           _this.microareaindex = ''
         }
       })
-      console.log(data)
       if (data) {
         _this.microarea = []
         axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MICRO_REGION_CODE', 'opt': {'ADMIN_REGION_CODE': data.id}}})
           .then(function (response) {
             if (response.statusText === 'OK') {
-              console.log(response)
               _this.microarea = response.data.MICRO_REGION_CODE
-              console.log(_this.microarea)
             } else {
               _this.$message.error('占无数据')
             }
@@ -261,7 +269,6 @@ export default {
       this.microareaindex = index
       let microareaBl = false
       let microareaType = 'MICRO_REGION_CODE'
-      console.log(this.tags)
       this.screening(microareaBl, this.tags, data, microareaType)
       this.postData.opt.MICRO_REGION_CODE = data.id
       this.$emit('fullConditions', this.postData)
@@ -271,7 +278,6 @@ export default {
       this.tradeindex = index
       let tradeBl = false
       let tradeType = 'MERCHANT_TYPE'
-      console.log(this.tags)
       this.screening(tradeBl, this.tags, data, tradeType)
       this.postData.opt.MERCHANT_TYPE = data.id
       this.$emit('fullConditions', this.postData)
@@ -281,7 +287,6 @@ export default {
       this.salesManagerindex = index
       let salesManagerBl = false
       let salesManagerType = 'SALE_NAME'
-      console.log(this.tags)
       this.screening(salesManagerBl, this.tags, data, salesManagerType)
       this.postData.opt.SALE_NAME = data.id
       this.$emit('fullConditions', this.postData)
@@ -291,7 +296,6 @@ export default {
       this.operationManagerindex = index
       let operationManagerBl = false
       let operationManagerType = 'OPERATOR_NAME'
-      console.log(this.tags)
       this.screening(operationManagerBl, this.tags, data, operationManagerType)
       this.postData.opt.OPERATOR_NAME = data.id
       this.$emit('fullConditions', this.postData)
@@ -301,7 +305,6 @@ export default {
       this.storeAttributesindex = index
       let storeAttributesBl = false
       let storeAttributesType = 'SUBBRANCH_PROP'
-      console.log(this.tags)
       this.screening(storeAttributesBl, this.tags, data, storeAttributesType)
       this.postData.opt.SUBBRANCH_PROP = data.id
       this.$emit('fullConditions', this.postData)
@@ -312,13 +315,11 @@ export default {
       let contactListBl = false
       let contactLisType = 'MERCHANT_ID'
       let _this = this
-      console.log(this.tags)
       this.screening(contactListBl, this.tags, data, contactLisType)
       this.postData.opt.MERCHANT_ID = data.id
       this.$emit('fullConditions', this.postData)
       axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': ' SUBBRANCH_ID', 'opt': {'MERCHANT_ID': data.id}}})
         .then(function (response) {
-          console.log(response)
           _this.shopnameList = response.data.SUBBRANCH_ID
         })
         .catch(function (error) {
@@ -333,7 +334,6 @@ export default {
           if (item.type === type) {
             judge = true
             this.tags.splice(index, 1, data)
-            console.log(judge)
           }
         })
         if (!judge) { this.tags.push(data) }
@@ -344,7 +344,6 @@ export default {
       this.shopnameListindex = index
       let shopnameListBl = false
       let shopnameListType = 'SUBBRANCH_ID'
-      console.log(this.tags)
       this.screening(shopnameListBl, this.tags, data, shopnameListType)
       this.postData.opt.SUBBRANCH_ID = data.id
       this.$emit('fullConditions', this.postData)

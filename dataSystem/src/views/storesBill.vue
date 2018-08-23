@@ -1,22 +1,24 @@
 <template>
     <div id="storesBill">
       <screenData v-on:fullConditions='loadData'></screenData>
-      <div class="box" v-if="dataPageList.length!=0">
-        <div class="box-flex" v-if="shopList.length!=0">
-          <div v-for="(item, index) in shopList" :key="index">
-            <div class="box-list box-birder">{{item._key}}</div>
-            <div class="box-list" v-for="(items, indexs) in item._data" :key="indexs">{{items}}</div>
+      <div class="overflow-height">
+        <div class="box" v-if="dataPageList.length!=0">
+          <div class="box-flex" v-if="shopList.length!=0">
+            <div v-for="(item, index) in shopList" :key="index">
+              <div class="box-list box-birder">{{item._key}}</div>
+              <div class="box-list" v-for="(items, indexs) in item._data" :key="indexs">{{items}}</div>
+            </div>
           </div>
-        </div>
-        <div class="box-left" v-if="page!=0" @click="leftList">
-          <i class="el-icon-caret-left"></i>
-        </div>
-        <div class="box-flex" v-for="(items, index) in dataPageList" :key="index">
-          <div class="box-list1 box-birder">{{items._key}}</div>
-          <div class="box-list1" v-for="(itemss, indexs) in items._data" :key="indexs">{{itemss}}</div>
-        </div>
-        <div class="box-right" @click="rightList" v-if="pageright">
-          <i class="el-icon-caret-right"></i>
+          <div class="box-left" v-if="page!=0" @click="leftList">
+            <i class="el-icon-caret-left"></i>
+          </div>
+          <div class="box-flex" v-for="(items, index) in dataPageList" :key="index">
+            <div class="box-list1 box-birder">{{items._key}}</div>
+            <div class="box-list1" v-for="(itemss, indexs) in items._data" :key="indexs">{{itemss}}</div>
+          </div>
+          <div class="box-right" @click="rightList" v-if="pageright">
+            <i class="el-icon-caret-right"></i>
+          </div>
         </div>
       </div>
     </div>
@@ -34,8 +36,7 @@ export default {
       dataPageList: [],
       tableList: false,
       page: 0,
-      pageright: true,
-      data: {}
+      pageright: true
     }
   },
   components: {
@@ -50,12 +51,11 @@ export default {
         .then(response => {
           console.log(response)
           console.log(response.data)
-          response.data.splice(1, 9)
           this.shopList = response.data.splice(0, 1)
           console.log(this.shopList)
           this.dataList = response.data
           console.log(this.dataList)
-          this.dataPageList = response.data
+          this.dataPageList = response.data.slice(this.page * 10, 10)
           console.log(this.dataPageList)
         })
         .catch(function (error) {
@@ -64,17 +64,15 @@ export default {
     },
     rightList () {
       this.page += 1
-      this.data.page = this.page
-      this.loadData(this.data)
-      // console.log(this.page)
-      // console.log(this.dataList)
-      // console.log(this.dataPageList)
-      // this.dataPageList = this.dataList.slice(this.page * 10, this.page * 10 + 10)
-      // if (this.dataPageList.length < 10 || (this.page + 1) * 10 > this.dataList.length) {
-      //   this.pageright = false
-      // } else {
-      //   this.pageright = true
-      // }
+      console.log(this.page)
+      console.log(this.dataList)
+      console.log(this.dataPageList)
+      this.dataPageList = this.dataList.slice(this.page * 10, this.page * 10 + 10)
+      if (this.dataPageList.length < 10 || (this.page + 1) * 10 >= this.dataList.length) {
+        this.pageright = false
+      } else {
+        this.pageright = true
+      }
     },
     leftList () {
       this.pageright = true
@@ -164,5 +162,9 @@ export default {
 .box-right:hover {
   opacity: 0.7;
   background: #dddddd;
+}
+.overflow-height {
+  max-height: 600px;
+  overflow-y: auto;
 }
 </style>

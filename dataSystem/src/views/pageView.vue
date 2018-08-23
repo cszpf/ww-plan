@@ -14,7 +14,7 @@
                     <th v-for="(item, index) in titelList" :key="index">{{item}}</th>
                 </tr>
             </thead>
-        </table>        
+        </table>
       </div>
     </div>
 </template>
@@ -121,7 +121,10 @@ export default {
 </script>
 <style scoped>
 .table-overflow {
-    width: 1000px;
-    overflow: auto
+    width: 100%;
+    overflow-x: hidden;
+}
+table th {
+    min-width: 50px;
 }
 </style>
