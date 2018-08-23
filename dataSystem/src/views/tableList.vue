@@ -97,9 +97,9 @@ export default {
       link.style.display = 'none'
       link.href = url
       link.setAttribute('download', '' + ids + '.xlsx')
-
       document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
     },
     getData (datas) {
       axios({method: 'post', url: 'http://localhost:5000/api/export', data: datas, responseType: 'blob'})

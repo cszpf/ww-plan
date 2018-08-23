@@ -156,24 +156,24 @@ export default {
     // this.getData()
   },
   methods: {
-    download (data, ids) {
-      let url = window.URL.createObjectURL(new Blob([data.data]))
-      let link = document.createElement('a')
-      link.style.display = 'none'
-      link.href = url
-      link.setAttribute('download', '' + ids + '.xlsx')
-
-      document.body.appendChild(link)
-      link.click()
-    },
+    // download (data, ids) {
+    //   let url = window.URL.createObjectURL(new Blob([data.data]))
+    //   let link = document.createElement('a')
+    //   link.style.display = 'none'
+    //   link.href = url
+    //   link.setAttribute('download', '' + ids + '.xlsx')
+    //   document.body.appendChild(link)
+    //   link.click()
+    //   document.body.removeChild(link)
+    // },
     gotoData () {
-      axios({method: 'post', url: 'http://localhost:5000/api/export', data: this.postData, responseType: 'blob'})
-        .then(response => {
-          this.download(response, this.postData['ids'])
-        })
-        .catch(function (error) {
-          console.log(error)
-        })
+      // axios({method: 'post', url: 'http://localhost:5000/api/export', data: this.postData, responseType: 'blob'})
+      //   .then(response => {
+      //     this.download(response, this.postData['ids'])
+      //   })
+      //   .catch(function (error) {
+      //     console.log(error)
+      //   })
     },
     formatDate  (date) { // 日期格式化
       let y = date.getFullYear()
