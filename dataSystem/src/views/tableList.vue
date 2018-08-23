@@ -102,8 +102,9 @@ export default {
       link.click()
     },
     getData (datas) {
+      let _this = this
       axios({method: 'post', url: 'http://localhost:5000/api/export', data: datas, responseType: 'blob'})
-        .then(function (response) {
+        .then(response => {
           this.download(response, datas['ids'])
         })
         .catch(function (error) {
