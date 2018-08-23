@@ -35,8 +35,8 @@ export default {
       axios.post(path, {username: this.form.username, password: this.form.password})
         .then(function (response) {
           if (response.data.status === 'ok') {
-            console.log(response)
-            sessionStorage.setItem('username',response.data.username);
+            sessionStorage.setItem('username', response.data.username)
+            sessionStorage.setItem('id', 'mdhz')
             _this.$router.push({path: '/tableList'})
           } else {
             _this.form.password = ''

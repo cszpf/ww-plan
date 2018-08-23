@@ -20,16 +20,17 @@
           <span :class="[operationManagerindex===index?'admini':'','screen-span']" v-for="(item, index) in operationManager" :key="item.id" @click="operationManagerData(item,index)">{{ item.name }}</span>
         </el-form-item>
         <el-form-item label="商户 :" v-if="sogo">
-          <el-input class="sreem-input" v-model="form.name" size="mini" placeholder="输入商户"></el-input>
+          <el-input class="sreem-input" v-model="contact" size="mini" placeholder="输入商户" @blur="loadContact"></el-input>
+          <div><span :class="[contactListindex===index?'admini':'','screen-span']" v-for="(item, index) in contactList" :key="item.id" @click="contactListData(item,index)">{{item.name}}</span></div>
         </el-form-item>
         <el-form-item label="门店 :" v-if="shop">
-          <el-input class="sreem-input" v-model="form.name" size="mini" placeholder="输入门店"></el-input>
+          <span :class="[shopnameListindex===index?'admini':'','screen-span']" v-for="(item, index) in shopnameList" :key="item.id" @click="shopnameData(item,index)">{{item.name}}</span>
         </el-form-item>
         <el-form-item label="门店属性 :" v-if="storeAttributes">
           <span :class="[storeAttributesindex===index?'admini':'','screen-span']" v-for="(item, index) in storeAttributesList" :key="item.id" @click="storeAttributesData(item,index)">{{ item.name }}</span>
         </el-form-item>
         <el-form-item label="日期 :">
-          <el-date-picker v-model="date" type="daterange" placeholder="选择日期" size="small" format="yyyy-MM-dd">
+          <el-date-picker :clearable="clearablebl" :picker-options="pickerOptions0" v-model="date" type="daterange" placeholder="选择日期" size="small" value-format="yyyy-MM-dd" format="yyyy-MM-dd" @change="dateData">
           </el-date-picker>
         </el-form-item>
       </el-form>
@@ -57,15 +58,55 @@ export default {
     storeAttributes: {
       type: Boolean,
       default: true
-    },    
+    }
   },
   data () {
     return {
-      date: '',
+      pickerOptions0: {
+        disabledDate (time) {
+          return time.getTime() > Date.now() - 8.64e6
+        },
+        shortcuts: [
+          {
+            text: '最近一周',
+            onClick (picker) {
+              const end = new Date()
+              const start = new Date()
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+              picker.$emit('pick', [start, end])
+            }
+          },
+          {
+            text: '最近一个月',
+            onClick (picker) {
+              const end = new Date()
+              const start = new Date()
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+              picker.$emit('pick', [start, end])
+            }
+          },
+          {
+            text: '最近三个月',
+            onClick (picker) {
+              const end = new Date()
+              const start = new Date()
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+              picker.$emit('pick', [start, end])
+            }
+          }
+        ]
+      },
+      date: [],
       form: {
         name: '',
         date: ''
       },
+      contact: '', // 商户名称
+      contactList: [], // 商户列表
+      contactListindex: '',
+      shopname: '', // 门店名称
+      shopnameList: [], // 门店列表
+      shopnameListindex: '',
       district: [], // 行政区
       microarea: [], // 微区域
       trade: [], // 行业
@@ -83,30 +124,64 @@ export default {
       storeAttributesindex: '', // 门店属性
       tags: [],
       postData: {
-        id: 'mdhz',
+        ids: sessionStorage.getItem('id'),
         opt: {
           'ADMIN_REGION_CODE': '', // 行政区
           'MICRO_REGION_CODE': '', // 微区域
           'SALE_NAME': '', // 销售经理
           'MERCHANT_TYPE': '', // 行业
-          'OPERATOR_NAME': '' // 运营经理
+          'OPERATOR_NAME': '', // 运营经理
+          'MERCHANT_ID': '', // 商户
+          'SUBBRANCH_ID': '' // 门店
         },
-        date: ['2017-08-30', '2018-08-17']
-      }
+        date: [],
+        page: 0,
+        columns: 10
+      },
+      clearablebl: false
     }
   },
-  created () {},
+  created () {
+    let today = new Date()
+    let lastMonth = new Date(today.getTime() - 3600 * 1000 * 24 * 30)
+    this.date.push(this.formatDate(lastMonth), this.formatDate(today))
+    console.log(this.date)
+    this.postData.date = this.date
+  },
   mounted () {
     this.loadData('ADMIN_REGION_CODE') // 行政区
     this.loadData('MERCHANT_TYPE') // 行业
     this.loadData('SALE_NAME') // 销售经理
     this.loadData('OPERATOR_NAME') // 运营经理
-    if (this.sogo) {
-      this.loadData('MERCHANT_ID') // 商户
-    }
+    this.$emit('fullConditions', this.postData)
     // this.getData()
   },
   methods: {
+    formatDate  (date) {
+      let y = date.getFullYear()
+      let m = date.getMonth() + 1
+      m = m < 10 ? '0' + m : m
+      let d = date.getDate()
+      d = d < 10 ? ('0' + d) : d
+      return y + '-' + m + '-' + d
+    },
+    dateData () {
+      console.log(this.date)
+      this.postData.date = this.date
+      this.$emit('fullConditions', this.postData)
+    },
+    loadContact () {
+      let _this = this
+      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MERCHANT_ID', 'opt': {'MERCHANT_NAME': this.contact}}})
+        .then(function (response) {
+          console.log(response)
+          _this.contactList = response.data.MERCHANT_ID
+          console.log(_this.contactList)
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
     getData () {
       // let _this = this
       axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: this.postData})
@@ -156,6 +231,7 @@ export default {
       let adminiStrativeBl = false
       let adminiStrativeType = 'ADMIN_REGION_CODE'
       this.screening(adminiStrativeBl, this.tags, data, adminiStrativeType)
+      this.$emit('fullConditions', this.postData)
       _this.tags.forEach((item, index) => {
         if (item.type === 'MICRO_REGION_CODE') {
           _this.tags.splice(index, 1)
@@ -187,6 +263,8 @@ export default {
       let microareaType = 'MICRO_REGION_CODE'
       console.log(this.tags)
       this.screening(microareaBl, this.tags, data, microareaType)
+      this.postData.opt.MICRO_REGION_CODE = data.id
+      this.$emit('fullConditions', this.postData)
     },
     tradeData (data, index) {
       // 行业
@@ -195,6 +273,8 @@ export default {
       let tradeType = 'MERCHANT_TYPE'
       console.log(this.tags)
       this.screening(tradeBl, this.tags, data, tradeType)
+      this.postData.opt.MERCHANT_TYPE = data.id
+      this.$emit('fullConditions', this.postData)
     },
     salesManagerData (data, index) {
       // 销售经理
@@ -203,6 +283,8 @@ export default {
       let salesManagerType = 'SALE_NAME'
       console.log(this.tags)
       this.screening(salesManagerBl, this.tags, data, salesManagerType)
+      this.postData.opt.SALE_NAME = data.id
+      this.$emit('fullConditions', this.postData)
     },
     operationManagerData (data, index) {
       // 运营经理
@@ -211,6 +293,8 @@ export default {
       let operationManagerType = 'OPERATOR_NAME'
       console.log(this.tags)
       this.screening(operationManagerBl, this.tags, data, operationManagerType)
+      this.postData.opt.OPERATOR_NAME = data.id
+      this.$emit('fullConditions', this.postData)
     },
     storeAttributesData (data, index) {
       // 门店属性
@@ -219,6 +303,27 @@ export default {
       let storeAttributesType = 'SUBBRANCH_PROP'
       console.log(this.tags)
       this.screening(storeAttributesBl, this.tags, data, storeAttributesType)
+      this.postData.opt.SUBBRANCH_PROP = data.id
+      this.$emit('fullConditions', this.postData)
+    },
+    contactListData (data, index) {
+      // 商户
+      this.contactListindex = index
+      let contactListBl = false
+      let contactLisType = 'MERCHANT_ID'
+      let _this = this
+      console.log(this.tags)
+      this.screening(contactListBl, this.tags, data, contactLisType)
+      this.postData.opt.MERCHANT_ID = data.id
+      this.$emit('fullConditions', this.postData)
+      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': ' SUBBRANCH_ID', 'opt': {'MERCHANT_ID': data.id}}})
+        .then(function (response) {
+          console.log(response)
+          _this.shopnameList = response.data.SUBBRANCH_ID
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
     },
     screening (judge, tags, data, type) { // 判断值 筛选条件 数据 类型
       if (this.tags.length === 0) {
@@ -233,6 +338,16 @@ export default {
         })
         if (!judge) { this.tags.push(data) }
       }
+    },
+    shopnameData (data, index) {
+      // 门店
+      this.shopnameListindex = index
+      let shopnameListBl = false
+      let shopnameListType = 'SUBBRANCH_ID'
+      console.log(this.tags)
+      this.screening(shopnameListBl, this.tags, data, shopnameListType)
+      this.postData.opt.SUBBRANCH_ID = data.id
+      this.$emit('fullConditions', this.postData)
     },
     handleClose (type, index) {
       this.tags.splice(index, 1)
@@ -260,6 +375,19 @@ export default {
       }
       if (type === 'SUBBRANCH_PROP') {
         this.storeAttributesindex = ''
+      }
+      if (type === 'MERCHANT_ID') {
+        this.contactListindex = ''
+        this.tags.forEach((item, index) => {
+          if (item.type === 'SUBBRANCH_ID') {
+            this.tags.splice(index, 1)
+            this.shopnameListindex = ''
+            this.shopnameList = []
+          }
+        })
+      }
+      if (type === 'SUBBRANCH_ID') {
+        this.shopnameListindex = ''
       }
     }
   }
@@ -299,6 +427,12 @@ export default {
 .tag-span {
   float: right;
   margin-right: 10px;
+}
+.contactListSpan {
+  margin-right: 15px;
+}
+.contactListSpan:hover {
+  color: #f9980f;
 }
 </style>
 <style>

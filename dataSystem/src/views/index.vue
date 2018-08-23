@@ -21,7 +21,7 @@
          </el-col>
        </el-row>
       </div>
-      <el-card class="contentView">
+      <el-card class="contentView"  v-loading="loading"    element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
         <router-view></router-view>
       </el-card>
     </div>
@@ -78,22 +78,69 @@ export default {
           name: '劵排名',
           url: '/storeRanking',
           parentMenuId: '9'
+        },
+        {
+          name: '点击量',
+          url: '/pageView',
+          parentMenuId: '10'
         }
-        // {
-        //   name: '点击量',
-        //   url: '/storesSummary',
-        //   parentMenuId: '9'
-        // }
       ],
-      username: ''
+      username: '',
+      loading: true
     }
   },
   created () {
-    this.username = sessionStorage.getItem('username');
+    this.username = sessionStorage.getItem('username')
+    this.loadingTime()
   },
   methods: {
+    loadingTime () {
+      setTimeout(() => {
+        this.loading = false
+      }, 1500)
+    },
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
+      if (key === '/storesSummary') { // 门店汇总
+        sessionStorage.setItem('id', 'mdhz')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/securitiesSummary') { // 券汇总
+        sessionStorage.setItem('id', 'qhz')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/customerSummary') { // 客户汇总
+        sessionStorage.setItem('id', 'khhz')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/commodityCoupons') { // 商户用券
+        sessionStorage.setItem('id', 'shyq')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/commodityCouponsDetail') { // 商户用券详情
+        sessionStorage.setItem('id', 'shyqxq')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/storesBill') { // 门店流水
+        sessionStorage.setItem('id', 'mdls')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/storeBillRatio') { // 门店流水占比
+        sessionStorage.setItem('id', 'mdlszb')
+        this.loading = true
+        this.loadingTime()
+      }
+      if (key === '/pageView') { // 点击量
+        sessionStorage.setItem('id', 'djl')
+        this.loading = true
+        this.loadingTime()
+      }
     },
     passwd () {
       this.$router.push({path: '/passwd'})
@@ -108,7 +155,8 @@ export default {
           type: 'success',
           message: '操作成功!'
         })
-        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('id')
         this.$router.push({path: '/login'})
       }).catch(() => {})
     }

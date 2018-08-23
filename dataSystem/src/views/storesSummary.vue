@@ -2,33 +2,6 @@
   <div id="storesSummary">
     <screenData :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
     <div class="stores-table">
-      <!-- <el-table class="screen-table" style="width:83%" :data="tableData3">
-        <el-table-column fixed prop="date" label="指标" min-width="110"></el-table-column>
-        <el-table-column prop="zip" label="180701"></el-table-column>
-        <el-table-column prop="type" label="180702"></el-table-column>
-        <el-table-column prop="type" label="180703"></el-table-column>
-        <el-table-column prop="type" label="180704"></el-table-column>
-        <el-table-column prop="type" label="180705"></el-table-column>
-        <el-table-column prop="type" label="180706"></el-table-column>
-        <el-table-column prop="type" label="180707"></el-table-column>
-        <el-table-column prop="type" label="180708"></el-table-column>
-        <el-table-column prop="type" label="180709"></el-table-column>
-        <el-table-column prop="type" label="180710"></el-table-column>
-        <el-table-column prop="type" label="180711"></el-table-column>
-        <el-table-column prop="type" label="180712"></el-table-column>
-        <el-table-column prop="type" label="180713"></el-table-column>
-        <el-table-column prop="type" label="180714"></el-table-column>
-        <el-table-column prop="type" label="180715"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-        <el-table-column prop="type" label="180716"></el-table-column>
-      </el-table> -->
       <div class="box">
         <div class="box-a">
           <div :class="[number == index?'box-title1':'','box-title']" v-for="(item, index) in dataName" :key="item.name">{{item.name}}</div>
@@ -88,7 +61,7 @@ export default {
       ],
       merchant: false,
       outlet: false,
-      attribute:false,
+      attribute: false,
       pageNumber: 1,
       pageSize: 20,
       total: 0,

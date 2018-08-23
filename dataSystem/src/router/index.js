@@ -81,6 +81,11 @@ export default new Router({
         {
           path: '/storeRanking',
           component: resolve => require(['@/views/storeRanking'], resolve)
+        },
+        // 点击量
+        {
+          path: '/pageView',
+          component: resolve => require(['@/views/pageView'], resolve)
         }
       ]
     }
