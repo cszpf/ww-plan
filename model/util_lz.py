@@ -60,6 +60,7 @@ class Export:
             _temp.extend(["b.{}='{}'".format(i,j) \
                 for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
             sql += ' AND ' + ' AND '.join(_temp)
+
         result = self.connect.query(self.connect.fenqi, sql)
         for _sub in result:
             if _sub:
@@ -98,7 +99,7 @@ class Export:
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data,index = indexs)
         df = df.stack().unstack(0)
-        # df.to_csv(os.path.join(dir_name,'cmmd.csv'),index=False,encoding='gbk', sep=',')
+        #df.to_csv('cmmd.csv',index=False,encoding='gbk', sep=',')
         return df
 
     # 实现活跃门店表的在线生成
@@ -353,7 +354,7 @@ class Export:
             x = start_date + datetime.timedelta(i)
             sql1 = """SELECT subbranch_id, a.create_time, average_assess_income
                      FROM subbranch a, merchant b, merchant_industry c
-                     WHERE a.merchant_id = b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL"""
+                     WHERE a.merchant_id = b.merchant_id AND b.merchant_type = c.merchant_type"""
             if opt:
                 _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
                 if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
@@ -370,8 +371,10 @@ class Export:
                         accum_sub += 1
                         if _sub1[1].date() == x:
                             newly_sub += 1
-                        if _sub1[2]:
-                            accum_assess_income += float(_sub1[2])
+                else:
+                    accum_sub += 1
+                if _sub1[2]:
+                    accum_assess_income += float(_sub1[2])
             _data.extend([newly_sub, accum_sub,accum_assess_income])
             for _sub in result:
                 if _sub:
@@ -395,27 +398,28 @@ class Export:
                 aver_house_lszb = 0
             _data.extend([accum_yyls, accum_lszb, aver_house_access_income, aver_house_yyls, aver_house_lszb])
             try:
-                hymd_num = len(hymd_data.loc[:,x.strftime("%y%m%d")])
+                hymd_num = len(hymd_data.loc[:,x.strftime("%y%m%d")].dropna())
             except:
                 hymd_num = 0  
             hymd_zb = round(float(hymd_num)/float(accum_sub),3)
             try:
-                cmmd_num = len(cmmd_data.loc[:,x.strftime("%y%m%d")])
+                cmmd_num = len(cmmd_data.loc[:,x.strftime("%y%m%d")].dropna())
+
             except:
                 cmmd_num = 0
             try:
-                ydsh_num = len(ydsh_data.loc[:,x.strftime("%y%m%d")])
+                ydsh_num = len(ydsh_data.loc[:,x.strftime("%y%m%d")].dropna())
             except:
                 ydsh_num = 0
             try:
-                lssh_num = len(lssh_data.loc[:,x.strftime("%y%m%d")])
+                lssh_num = len(lssh_data.loc[:,x.strftime("%y%m%d")].dropna())
             except:
                 lssh_num = 0
             _data.extend([hymd_num, hymd_zb, cmmd_num, ydsh_num, lssh_num])
             all_data.append(_data)
+            print(i+1)
         df = pd.DataFrame(all_data,index = indexs, columns = pd.Index(columns, name = '指标'))
         df = df.stack().unstack(0)
-        #df.to_csv('mdhz.csv',index=False,encoding='gbk', sep=',')
         return [df,hymd_data,cmmd_data,ydsh_data,lssh_data],['门店汇总','活跃门店','沉默门店','异动商户','流失商户']
 
 
@@ -424,10 +428,11 @@ def main():
     export = Export()
     #export.mdls('2018-8-1','2018-8-15','./')
     #export.mdlszb('2018-6-1','2018-6-4','./')
-    #export.cmmd('2018-6-1', '2018-6-10', './')
+    #export.cmmd('2018-8-20','2018-8-23','./')
     #export.hymd('2018-8-1','2018-8-15','./')
     #export.ydsh('2018-6-1','2018-6-10','./')
     #export.lssh('2018-7-11','2018-7-28','./')
-    export.mdhz('2018-8-18','2018-8-21','./')
+    export.mdhz('2018-8-20','2018-8-23','./')
+
 if __name__ == '__main__':
     main()
