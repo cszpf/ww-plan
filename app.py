@@ -86,6 +86,7 @@ def export():
     end_date = end_date.strftime('%Y-%m-%d')
     ids = data['ids']
     opt = data.get('opt', {})
+    opt = {i:j for i, j in opt.items() if j != ''}
     if ids != 'all':
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
     else:
