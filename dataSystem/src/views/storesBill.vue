@@ -116,7 +116,7 @@ export default {
   word-wrap:break-word;
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: center;  
   align-items: center;
 }
 .box-list1 {

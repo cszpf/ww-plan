@@ -97,9 +97,9 @@ export default {
       link.style.display = 'none'
       link.href = url
       link.setAttribute('download', '' + ids + '.xlsx')
-
       document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
     },
     getData (datas) {
       let _this = this
