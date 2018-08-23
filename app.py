@@ -104,8 +104,10 @@ def table_export():
     ids = data['ids']
     opt = data.get('opt', {})
     opt = {i:j for i, j in opt.items() if j != ''}
-    pages = data.get('page'); cols = data.get('columns')
-    pages = pages * cols
+    # 处理分页
+    # pages = data.get('page'); cols = data.get('columns')
+    # pages = pages * cols
+    pages = 0 # 不处理分页
     if ids in ['mdhz', 'djl']:
     	_cols = [0]; pages += 1
     elif ids in ['qhz']:
@@ -116,6 +118,7 @@ def table_export():
     	_cols = list(range(6)); pages += 6
     else:
     	_cols = []
+    _cols = [0] # 不处理分页
     if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
         if ids in ['mdhz']:
@@ -128,9 +131,11 @@ def table_export():
     if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
     	_cols = list(range(len(datas.columns)))
     else:
-    	x = pages + cols
-    	x = x if x <= len(datas.columns) else len(datas.columns)
-    	_cols.extend(list(range(pages, x)))
+        # 处理分页
+    	# x = pages + cols
+    	# x = x if x <= len(datas.columns) else len(datas.columns)
+    	# _cols.extend(list(range(pages, x)))
+        _cols.extend(list(range(pages, len(datas.columns)))) # 不处理分页
     return jsonify(dataformat(datas.iloc[:, _cols]))
 
 @app.route('/api/databind', methods=['POST'])
