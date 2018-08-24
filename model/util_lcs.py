@@ -86,14 +86,14 @@ class Export:
 
                 sql2 = """SELECT subbranch_id,create_time
                                           FROM subbranch 
-                                          WHERE subbranch_id='{}'""".format(all_sub[0])
+                                          WHERE state=2 AND subbranch_id='{}'""".format(all_sub[0])
                 result22 = self.connect.query(self.connect.fenqi, sql2)
                 result2 = result2 + result22
                 #关注客户数
                 sql3 = """SELECT user_id,a.create_time
                                           FROM user a,merchant_config b,subbranch c
                                           WHERE a.merchant_config_id=b.merchant_config_id AND b.merchant_config_id=c.merchant_config_id AND c.sub_type=1 
-                                                 AND c.subbranch_id='{}'""".format(all_sub[0])
+                                                 AND c.state=2 AND c.subbranch_id='{}'""".format(all_sub[0])
                 result33 = self.connect.query(self.connect.fenqi, sql3)
                 result3 = result3 + result33
                 #活跃、流失客户数
