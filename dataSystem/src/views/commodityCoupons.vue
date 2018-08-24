@@ -38,7 +38,7 @@ export default {
       tableList: false,
       page: 0,
       pageright: true,
-      loading: true      
+      loading: true
     }
   },
   components: {
@@ -57,7 +57,7 @@ export default {
             this.loading = false
             this.$store.commit('increment', false)
             console.log('aaa' + this.$store.state.path)
-          }          
+          }
           console.log(response)
           console.log(response.data)
           response.data.splice(1, 5)

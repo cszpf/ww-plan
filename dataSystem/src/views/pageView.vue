@@ -25,7 +25,7 @@
             <i class="el-icon-caret-right"></i>
           </div>
         </div>
-      </div>      
+      </div>
     </div>
 </template>
 <script>
@@ -104,7 +104,7 @@ export default {
   mounted () {
     this.loadData()
   },
-  methods: {    
+  methods: {
     formatDate  (date) {
       let y = date.getFullYear()
       let m = date.getMonth() + 1
@@ -121,12 +121,12 @@ export default {
       this.loading = true
       this.shopList = []
       this.dataList = []
-      this.dataPageList = []      
+      this.dataPageList = []
       axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: this.postData})
         .then(response => {
           if (response.data) {
             this.loading = false
-          }          
+          }
           console.log(response)
           console.log(response.data)
           this.shopList = response.data.splice(0, 1)
@@ -134,7 +134,7 @@ export default {
           this.dataList = response.data
           console.log(this.dataList)
           this.dataPageList = response.data.slice(this.page * 10, 10)
-          console.log(this.dataPageList)          
+          console.log(this.dataPageList)
         })
         .catch(function (error) {
           console.log(error)
@@ -159,7 +159,7 @@ export default {
       console.log(this.dataList)
       console.log(this.dataPageList)
       this.dataPageList = this.dataList.slice(this.page * 10, this.page * 10 + 10)
-    }    
+    }
   }
 }
 </script>
