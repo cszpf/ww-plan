@@ -46,15 +46,16 @@ class Export:
             x = start_date + datetime.timedelta(i)
             columns.append(x.strftime("%y%m%d"))
 
-        sql = """SELECT subbranch_id,ADMIN_REGION_CODE,MICRO_REGION_CODE,merchant_type_name,SALE_NAME, OPERATOR_NAME,a.merchant_id
+        sql = """SELECT subbranch_id,ADMIN_REGION_CODE,MICRO_REGION_CODE,merchant_type_name,SALE_NAME, OPERATOR_NAME,a.merchant_id,b.create_time
                   FROM subbranch a,merchant b, merchant_industry c
-                  WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type  """
+                  WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL"""
         if opt:
-            _temp = ["{}='{}'".format(i, j) for i, j in opt.items() if i not in ('MERCHANT_ID', 'MERCHANT_TYPE', 'SUBBRANCH_PROP')]
+            _temp = ["{}='{}'".format(i, j) for i, j in opt.items() if i not in ('MERCHANT_ID', 'MERCHANT_TYPE')]
             _temp.extend(["b.{}='{}'".format(i, j)  for i, j in opt.items() if i in ('MERCHANT_ID', 'MERCHANT_TYPE')])
             sql += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql)
-        # print(result)
+        #print(result)
+        #print(len(result))
         data_qqd = []
         if opt.get('ADMIN_REGION_CODE','-')!='-':
             data_qqd.append(self.connect.region_code2name(opt.get('ADMIN_REGION_CODE')))
@@ -77,32 +78,32 @@ class Export:
         else:
             data_qqd.append('-')
         #print(data_qqd)
-        result1=();result2=();result3=();result4=();result7=();result10=()
+        result2=();result3=();result4=();result7=();result10=();result1=set()
         for all_sub in result:
             if all_sub:
                 all_sub=list(all_sub)
-                sql1 = """SELECT merchant_id,create_time
-                                          FROM merchant
-                                          WHERE merchant_id='{}'""".format(all_sub[6])
-                result11 = self.connect.query(self.connect.fenqi, sql1)
-                result1=result1 + result11
+                result1.add((all_sub[6],all_sub[7]))
+
                 sql2 = """SELECT subbranch_id,create_time
                                           FROM subbranch 
                                           WHERE subbranch_id='{}'""".format(all_sub[0])
                 result22 = self.connect.query(self.connect.fenqi, sql2)
                 result2 = result2 + result22
+                #关注客户数
                 sql3 = """SELECT user_id,a.create_time
                                           FROM user a,merchant_config b,subbranch c
                                           WHERE a.merchant_config_id=b.merchant_config_id AND b.merchant_config_id=c.merchant_config_id AND c.sub_type=1 
                                                  AND c.subbranch_id='{}'""".format(all_sub[0])
                 result33 = self.connect.query(self.connect.fenqi, sql3)
                 result3 = result3 + result33
+                #活跃、流失客户数
                 sql4 = """SELECT a.user_id,a.create_time,c.create_time,d.create_time
                                           FROM user a,user_deposit_card b,user_deposit_card_log c,wechat_pay_log d
                                           WHERE a.user_id=b.user_id AND b.user_deposit_card_id=c.user_deposit_card_id AND a.user_id=d.user_id 
                                                  AND c.subbranch_id='{}'""".format(all_sub[0])
                 result44 = self.connect.query(self.connect.fenqi, sql4)
                 result4 = result4 + result44
+                #复购次数
                 sql5 = """SELECT a.user_id,a.create_time,c.create_time
                                           FROM user a,user_deposit_card b,user_deposit_card_log c
                                           WHERE a.user_id=b.user_id AND b.user_deposit_card_id=c.user_deposit_card_id AND c.subbranch_id='{}'""".format(
@@ -113,17 +114,18 @@ class Export:
                                           WHERE  a.user_id=d.user_id AND d.subbranch_id='{}' """.format(all_sub[0])
                 result6 = self.connect.query(self.connect.fenqi, sql6)
                 result7 = result7 + result5 + result6
-                sql8 = """SELECT a.coupons_promote_id,c.create_time,d.create_time,c.amount,d.amount,e.label_id
-                                          FROM coupons.coupons a,coupons.coupons_log b,fenqi.wechat_pay_log c,fenqi.user_deposit_card_log d,coupons.coupons_cfg_label_rela e
-                                          WHERE  a.coupons_id=b.coupons_id AND b.wechat_cashier_id=c.wechat_pay_log_id 
-                                                  AND b.user_deposit_card_log_id=d.user_deposit_card_id AND a.coupons_config_id=e.coupons_config_id 
-                                                  AND c.subbranch_id='{}'""".format(all_sub[0])
+                #print(result7)
+                #标签券
+                sql8 = """SELECT a.coupons_promote_id,c.create_time,c.amount,e.label_id
+                          FROM coupons.coupons a,coupons.coupons_log b,fenqi.wechat_pay_log c,coupons.coupons_cfg_label_rela e
+                          WHERE  a.coupons_id=b.coupons_id AND b.wechat_pay_log_id=c.wechat_pay_log_id 
+                                 AND a.coupons_config_id=e.coupons_config_id AND c.subbranch_id='{}'""".format(all_sub[0])
                 result8 = self.connect.query('', sql8)
-                sql9 = """SELECT a.coupons_promote_id,c.create_time,d.create_time,c.amount,d.amount,e.label_id
-                                          FROM coupons.coupons a,coupons.coupons_log b,fenqi.wechat_pay_log c,fenqi.user_deposit_card_log d,coupons.coupons_cfg_label_rela e
-                                          WHERE  a.coupons_id=b.coupons_id AND b.wechat_cashier_id=c.wechat_pay_log_id 
-                                                  AND b.user_deposit_card_log_id=d.user_deposit_card_id AND a.coupons_config_id=e.coupons_config_id 
-                                                  AND d.subbranch_id='{}'""".format(all_sub[0])
+                #邻店券
+                sql9 = """SELECT a.coupons_promote_id,d.create_time,d.amount,e.label_id
+                          FROM coupons.coupons a,coupons.coupons_log b,fenqi.user_deposit_card_log d,coupons.coupons_cfg_label_rela e
+                          WHERE  a.coupons_id=b.coupons_id AND b.user_deposit_card_log_id=d.user_deposit_card_id 
+                                  AND a.coupons_config_id=e.coupons_config_id AND d.subbranch_id='{}'""".format(all_sub[0])
                 result9 = self.connect.query('', sql9)
                 result10=result10 + result8 + result9
 
@@ -224,22 +226,24 @@ class Export:
                     new_negative.add(_sub[0])
             #复购次数
             for _sub in result7:
-                if _sub[2]==x:
+                if _sub[2].date()==x:
                     count_purchase+=1#指定日期的消费次数
                     if _sub[0] in data.keys():
                         data[_sub[0]]+=1
                     else:
                         data[_sub[0]]=1
-                        #data:指定日期的{用户ID：消费次数}
-            for _sub in data:
-                if _sub.values()!=1:
-                    count_repurchase=count_repurchase+_sub.values()
-            #回头客的平均复购周期
+                       #data:指定日期的客户{用户ID：消费次数}
+            #print(data)
+            for _sub in data.values():
+                #print(_sub)
+                if _sub!=1:
+                    count_repurchase=count_repurchase+_sub
+            #当天回头客的平均复购周期
             for id in data.keys():
                 min=0
                 for _sub in result7:
                     if _sub[0]==id:
-                        if x-_sub[2].date()>0:#回头客
+                        if (x-_sub[2].date()).days>=0:#回头客
                             if min==0:
                                 min = (x - _sub[2].date()).days
                             if min>((x-_sub[2].date()).days):
@@ -248,23 +252,23 @@ class Export:
             if len(data.keys())==0:
                 count_average_repurchase=0
             else:
-                count_average_repurchase=count_average_repurchase/len(data.keys())
+                count_average_repurchase=int(count_average_repurchase/len(data.keys()))
             #新增、累计邻店带客数
             for _sub in result10:
                 if _sub[0] != '':
-                    if _sub[1]==x or _sub[2]==x:
+                    if _sub[1]==x :
                         count_new_neighbor+=1
-                    if _sub[1]<=x or _sub[2]<=x:
+                    if _sub[1]<=x :
                         count_neighbor+=1
             #新增、累计关注券消费的客单价
             GZ = '145556'
             CH = '145558'
             for _sub in result10:
-                if _sub[5] == '145556':
-                    if _sub[1]==x or _sub[2]==x:
-                        count_new_attention+=_sub[3]+_sub[4]
-                    if _sub[1]<=x or _sub[2]<=x:
-                        count_attention += _sub[3] + _sub[4]
+                if _sub[3] == '145556':
+                    if _sub[1]==x :
+                        count_new_attention+=_sub[2]
+                    if _sub[1]<=x :
+                        count_attention += _sub[2]
                         count_att += 1
             if count_att!=0:
                 count_new_attention=count_new_attention/count_att
@@ -276,11 +280,11 @@ class Export:
             GZ = '145556'
             CH = '145558'
             for _sub in result10:
-                if _sub[5] == '145558':
-                    if _sub[1] == x or _sub[2] == x:
-                        count_new_promote += _sub[3] + _sub[4]
-                    if _sub[1] <= x or _sub[2] <= x:
-                        count_promote += _sub[3] + _sub[4]
+                if _sub[3] == '145558':
+                    if _sub[1] == x :
+                        count_new_promote += _sub[2]
+                    if _sub[1] <= x :
+                        count_promote += _sub[2]
                         count_pro += 1
             if count_pro!=0:
                 count_new_promote = count_new_promote / count_pro
@@ -291,10 +295,10 @@ class Export:
             # 新增、累计邻店券消费的客单价
             for _sub in result10:
                 if _sub[0] != '':
-                    if _sub[1] == x or _sub[2] == x:
-                        count_new_neighbor1 += _sub[3] + _sub[4]
-                    if _sub[1] <= x or _sub[2] <= x:
-                        count_neighbor1+= _sub[3] + _sub[4]
+                    if _sub[1] == x :
+                        count_new_neighbor1 += _sub[2]
+                    if _sub[1] <= x :
+                        count_neighbor1+= _sub[2]
                         count_neigh += 1
             if count_neigh!=0:
                 count_new_neighbor1 = count_new_neighbor1 / count_neigh
@@ -362,13 +366,14 @@ class Export:
             columns.append(x.strftime("%y%m%d"))
         sql = """SELECT subbranch_id,MICRO_REGION_CODE,merchant_type_name,SALE_NAME, OPERATOR_NAME,a.merchant_id
                           FROM subbranch a,merchant b, merchant_industry c
-                          WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type  """
+                          WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL  """
         if opt:
             _temp = ["{}='{}'".format(i, j) for i, j in opt.items() if i not in ('MERCHANT_ID', 'MERCHANT_TYPE')]
             _temp.extend(["b.{}='{}'".format(i, j) for i, j in opt.items() if i in ('MERCHANT_ID', 'MERCHANT_TYPE')])
             sql += ' AND ' + ' AND '.join(_temp)
-        result = self.connect.query(self.connect.fenqi, sql)
-        # print(result)
+        result1 = self.connect.query(self.connect.fenqi, sql)
+        # print(result1)
+        # print(len(result1))
         data_qqd = []
         if opt.get('MICRO_REGION_CODE', '-') != '-':
             data_qqd.append(self.connect.region_code2name(opt.get('MICRO_REGION_CODE')))
@@ -387,16 +392,30 @@ class Export:
         else:
             data_qqd.append('-')
         # print(data_qqd)
-        result = ()
-        for all_sub in result:
-            if all_sub:
-                all_sub = list(all_sub)
-                sql1 = """SELECT coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,label_name,b.create_time,coupons_promote_id
-                FROM coupons a,coupons_config b,coupons_cfg_label_rela c,labels d
-                WHERE a.coupons_config_id=b.coupons_config_id AND a.coupons_config_id=c.coupons_config_id AND c.label_id=d.label_id 
-                      AND b.subbranch_id='{}'""".format(all_sub[0])
-                result1 = self.connect.query(self.connect.coupons, sql1)
-                result = result + result1
+        if opt:
+            result_label = ();result=()
+            for all_sub in result1:
+                if all_sub:
+                    all_sub = list(all_sub)
+                    sql1 = """SELECT a.coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,b.subbranch_id
+                         FROM coupons a,coupons_config b
+                         WHERE a.coupons_config_id=b.coupons_config_id AND b.subbranch_id='{}'""".format(all_sub[0])
+                    result = self.connect.query(self.connect.coupons, sql1)
+                    sql2 = """SELECT coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,label_name,b.create_time,coupons_promote_id
+                    FROM coupons a,coupons_config b,coupons_cfg_label_rela c,labels d
+                    WHERE a.coupons_config_id=b.coupons_config_id AND a.coupons_config_id=c.coupons_config_id AND c.label_id=d.label_id 
+                          AND b.subbranch_id='{}'""".format(all_sub[0])
+                    result2 = self.connect.query(self.connect.coupons, sql2)
+                    result_label = result_label + result2
+        else:
+            sql1="""SELECT a.coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,b.subbranch_id
+                FROM coupons a,coupons_config b
+                WHERE a.coupons_config_id=b.coupons_config_id"""
+            result= self.connect.query(self.connect.coupons, sql1)
+            sql2 = """SELECT coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,label_name,b.create_time,coupons_promote_id
+            FROM coupons a,coupons_config b,coupons_cfg_label_rela c,labels d
+            WHERE a.coupons_config_id=b.coupons_config_id AND a.coupons_config_id=c.coupons_config_id AND c.label_id=d.label_id """
+            result_label = self.connect.query(self.connect.coupons, sql2)
         #print(result)
         #领券数
         _data = []
@@ -510,6 +529,7 @@ class Export:
                     if _sub[5].date()<=x:
                         count_modify+=1
                     #关注券
+            for _sub in result_label:
                 if _sub[3].date() == x:
                     if _sub[6] == label_field[0]:
                         count_attention += 1
@@ -644,10 +664,11 @@ class Export:
 def main():
     export = Export()
     opt = {
-    'ADMIN_REGION_CODE':'2100',
-    'MICRO_REGION_CODE':'2104'
+    'ADMIN_REGION_CODE':'2100'
     }
-    print(export.khhz('2018-6-1','2018-6-3','./', opt)[0])
-    print(export.qhz('2018-6-1', '2018-6-3', './', opt)[0])
+    opt={}
+
+    print(export.khhz('2018-5-30','2018-6-1','./', opt)[0])
+    #print(export.qhz('2018-7-10', '2018-7-15', './', opt)[0])
 if __name__ == '__main__':
     main()
