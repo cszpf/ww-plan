@@ -1,7 +1,7 @@
 <template>
     <div id="storesBill">
       <screenData v-on:fullConditions='loadData'></screenData>
-      <div class="overflow-height">
+      <div class="overflow-height" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
         <div class="box" v-if="dataPageList.length!=0">
           <div class="box-flex" v-if="shopList.length!=0">
             <div v-for="(item, index) in shopList" :key="index">
@@ -36,7 +36,8 @@ export default {
       dataPageList: [],
       tableList: false,
       page: 0,
-      pageright: true
+      pageright: true,
+      loading: true
     }
   },
   components: {
@@ -44,11 +45,19 @@ export default {
   },
   methods: {
     loadData (data) {
+      this.loading = true
       console.log(data)
-      this.data = data
+      this.shopList = []
+      this.dataList = []
+      this.dataPageList = []
       // let _this = this
       axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: data})
         .then(response => {
+          if (response.data) {
+            this.loading = false
+            this.$store.commit('increment', false)
+            console.log('aaa' + this.$store.state.path)
+          }
           console.log(response)
           console.log(response.data)
           this.shopList = response.data.splice(0, 1)
@@ -114,13 +123,16 @@ export default {
   border-right: 1px solid #dddddd;
   text-align: center;
   word-wrap:break-word;
+  word-break:break-all;
   display: flex;
   flex-direction: row;
-  justify-content: center;  
+  justify-content: center;
   align-items: center;
+  padding: 5px;
 }
 .box-list1 {
   word-wrap: break-word;
+  word-break:break-all;
   height: 40px;
   /* line-height: 40px; */
   /* min-width: 80px; */
@@ -131,6 +143,7 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  padding: 5px;
 }
 .box-birder {
   border-bottom: 1px solid #dddddd;
@@ -144,6 +157,7 @@ export default {
   vertical-align: middle;
   border-bottom: 1px solid #dddddd;
   cursor: pointer;
+  padding: 5px;
 }
 .box-right {
   width: 2%;
@@ -154,6 +168,7 @@ export default {
   vertical-align: middle;
   border-bottom: 1px solid #dddddd;
   cursor: pointer;
+  padding: 5px;
 }
 .box-left:hover {
   opacity: 0.7;
@@ -166,5 +181,7 @@ export default {
 .overflow-height {
   max-height: 600px;
   overflow-y: auto;
+  min-width:1000px;
+  min-height: 300px;
 }
 </style>

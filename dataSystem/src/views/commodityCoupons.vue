@@ -1,7 +1,7 @@
 <template>
     <div id="commodityCoupons">
       <screenData v-on:fullConditions='loadData' :storeAttributes="attribute" :sogo="merchant" :shop="outlet"></screenData>
-      <div class="box" v-if="dataPageList.length!=0">
+      <div class="box" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
         <div class="box-flex" v-if="shopList.length!=0">
           <div v-for="(item, index) in shopList" :key="index">
             <div class="box-list box-birder">{{item._key}}</div>
@@ -37,7 +37,8 @@ export default {
       dataPageList: [],
       tableList: false,
       page: 0,
-      pageright: true
+      pageright: true,
+      loading: true      
     }
   },
   components: {
@@ -45,9 +46,18 @@ export default {
   },
   methods: {
     loadData (data) {
+      this.loading = true
       console.log(data)
+      this.shopList = []
+      this.dataList = []
+      this.dataPageList = []
       axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: data})
         .then(response => {
+          if (response.data) {
+            this.loading = false
+            this.$store.commit('increment', false)
+            console.log('aaa' + this.$store.state.path)
+          }          
           console.log(response)
           console.log(response.data)
           response.data.splice(1, 5)
@@ -94,6 +104,7 @@ export default {
   /* width: 90%; */
   /* margin: 15px; */
   /* min-width: 1000px; */
+  min-height: 300px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;

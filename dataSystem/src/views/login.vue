@@ -37,6 +37,7 @@ export default {
           if (response.data.status === 'ok') {
             sessionStorage.setItem('username', response.data.username)
             sessionStorage.setItem('id', 'mdhz')
+            _this.$store.commit('increment', true)
             _this.$router.push({path: '/tableList'})
           } else {
             _this.form.password = ''

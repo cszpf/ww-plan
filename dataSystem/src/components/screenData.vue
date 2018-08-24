@@ -37,7 +37,9 @@
       </div>
       <el-form class="filtro">
         <el-form-item label="已选择筛选条件 :">
-          <el-tag class="screen-tags" v-for="(tag, index) in tags" :key="tag.id" @close="handleClose(tag.type, index)" closable>{{ tag.name }}</el-tag><span class="tag-span">共有0个结果</span>
+          <el-tag class="screen-tags" v-for="(tag, index) in tags" :key="tag.id" @close="handleClose(tag.type, index)" closable>{{ tag.name }}</el-tag>
+          <!-- <span class="tag-span">共有0个结果</span> -->
+          <el-button :class="[nodisabled?'disabled':'','guidetable']"  type="success" size="small" @click="demand" :disabled="nodisabled">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -138,7 +140,13 @@ export default {
         page: 0,
         columns: 10
       },
-      clearablebl: false
+      clearablebl: false,
+      timeFrame: ''
+    }
+  },
+  computed: {
+    nodisabled () {
+      return this.$store.state.path
     }
   },
   created () {
@@ -156,6 +164,10 @@ export default {
     // this.getData()
   },
   methods: {
+    demand () {
+      this.$store.commit('increment', true)
+      this.$emit('fullConditions', this.postData)
+    },
     _download (data, ids) {
       let url = window.URL.createObjectURL(new Blob([data.data]))
       let link = document.createElement('a')
@@ -185,7 +197,6 @@ export default {
     },
     dateData () {
       this.postData.date = this.date
-      this.$emit('fullConditions', this.postData)
     },
     loadContact () {
       let _this = this
@@ -242,7 +253,6 @@ export default {
       let adminiStrativeBl = false
       let adminiStrativeType = 'ADMIN_REGION_CODE'
       this.screening(adminiStrativeBl, this.tags, data, adminiStrativeType)
-      this.$emit('fullConditions', this.postData)
       _this.tags.forEach((item, index) => {
         if (item.type === 'MICRO_REGION_CODE') {
           _this.tags.splice(index, 1)
@@ -271,7 +281,6 @@ export default {
       let microareaType = 'MICRO_REGION_CODE'
       this.screening(microareaBl, this.tags, data, microareaType)
       this.postData.opt.MICRO_REGION_CODE = data.id
-      this.$emit('fullConditions', this.postData)
     },
     tradeData (data, index) {
       // 行业
@@ -280,7 +289,6 @@ export default {
       let tradeType = 'MERCHANT_TYPE'
       this.screening(tradeBl, this.tags, data, tradeType)
       this.postData.opt.MERCHANT_TYPE = data.id
-      this.$emit('fullConditions', this.postData)
     },
     salesManagerData (data, index) {
       // 销售经理
@@ -289,7 +297,6 @@ export default {
       let salesManagerType = 'SALE_NAME'
       this.screening(salesManagerBl, this.tags, data, salesManagerType)
       this.postData.opt.SALE_NAME = data.id
-      this.$emit('fullConditions', this.postData)
     },
     operationManagerData (data, index) {
       // 运营经理
@@ -298,7 +305,6 @@ export default {
       let operationManagerType = 'OPERATOR_NAME'
       this.screening(operationManagerBl, this.tags, data, operationManagerType)
       this.postData.opt.OPERATOR_NAME = data.id
-      this.$emit('fullConditions', this.postData)
     },
     storeAttributesData (data, index) {
       // 门店属性
@@ -307,7 +313,6 @@ export default {
       let storeAttributesType = 'SUBBRANCH_PROP'
       this.screening(storeAttributesBl, this.tags, data, storeAttributesType)
       this.postData.opt.SUBBRANCH_PROP = data.id
-      this.$emit('fullConditions', this.postData)
     },
     contactListData (data, index) {
       // 商户
@@ -317,7 +322,6 @@ export default {
       let _this = this
       this.screening(contactListBl, this.tags, data, contactLisType)
       this.postData.opt.MERCHANT_ID = data.id
-      this.$emit('fullConditions', this.postData)
       axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': ' SUBBRANCH_ID', 'opt': {'MERCHANT_ID': data.id}}})
         .then(function (response) {
           _this.shopnameList = response.data.SUBBRANCH_ID
@@ -346,7 +350,6 @@ export default {
       let shopnameListType = 'SUBBRANCH_ID'
       this.screening(shopnameListBl, this.tags, data, shopnameListType)
       this.postData.opt.SUBBRANCH_ID = data.id
-      this.$emit('fullConditions', this.postData)
     },
     handleClose (type, index) {
       this.tags.splice(index, 1)
@@ -399,6 +402,9 @@ export default {
 /* .screen-table {
   margin-left: 20px;
 } */
+.disabled {
+  opacity: 0.7;
+}
 .guidetable {
   float: right;
   margin-right: 25px;

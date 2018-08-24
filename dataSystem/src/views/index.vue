@@ -103,43 +103,51 @@ export default {
       console.log(key, keyPath)
       if (key === '/storesSummary') { // 门店汇总
         sessionStorage.setItem('id', 'mdhz')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/securitiesSummary') { // 券汇总
         sessionStorage.setItem('id', 'qhz')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/customerSummary') { // 客户汇总
         sessionStorage.setItem('id', 'khhz')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/commodityCoupons') { // 商户用券
         sessionStorage.setItem('id', 'shyq')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/commodityCouponsDetail') { // 商户用券详情
         sessionStorage.setItem('id', 'shyqxq')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/storesBill') { // 门店流水
         sessionStorage.setItem('id', 'mdls')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/storeBillRatio') { // 门店流水占比
         sessionStorage.setItem('id', 'mdlszb')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
       if (key === '/pageView') { // 点击量
         sessionStorage.setItem('id', 'djl')
-        this.loading = true
-        this.loadingTime()
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
       }
     },
     passwd () {
@@ -157,6 +165,7 @@ export default {
         })
         sessionStorage.removeItem('username')
         sessionStorage.removeItem('id')
+        this.$store.commit('increment', true)
         this.$router.push({path: '/login'})
       }).catch(() => {})
     }
