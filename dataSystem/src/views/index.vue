@@ -50,7 +50,7 @@ export default {
           parentMenuId: '3'
         },
         {
-          name: '商品用劵',
+          name: '商户用劵',
           url: '/commodityCoupons',
           parentMenuId: '4'
         },
@@ -70,13 +70,13 @@ export default {
           parentMenuId: '7'
         },
         {
-          name: '门店排行',
+          name: '门店排名',
           url: '/storeRanking',
           parentMenuId: '8'
         },
         {
           name: '劵排名',
-          url: '/storeRanking',
+          url: '/topCoupons',
           parentMenuId: '9'
         },
         {
@@ -139,6 +139,12 @@ export default {
       }
       if (key === '/storeBillRatio') { // 门店流水占比
         sessionStorage.setItem('id', 'mdlszb')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/topCoupons') { // 券排名
+        sessionStorage.setItem('id', 'qpm')
         this.$store.commit('increment', true)
         // this.loading = true
         // this.loadingTime()

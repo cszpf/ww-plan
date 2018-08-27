@@ -34,6 +34,38 @@ export default new Router({
       },
       component: resolve => require(['@/views/tableList'], resolve)
     },
+    // 活跃门店数量
+    {
+      path: '/activeStores',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/activeStores'], resolve)
+    },
+    // 沉默门店数量
+    {
+      path: '/silenceStores',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/silenceStores'], resolve)
+    },
+    // 异动商户流失数量
+    {
+      path: '/businessesLost',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/businessesLost'], resolve)
+    },
+    // 流失商户数量
+    {
+      path: '/lossMerchants',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/lossMerchants'], resolve)
+    },
     // 主页
     {
       path: '/index',
@@ -81,6 +113,11 @@ export default new Router({
         {
           path: '/storeRanking',
           component: resolve => require(['@/views/storeRanking'], resolve)
+        },
+        // 券排行
+        {
+          path: '/topCoupons',
+          component: resolve => require(['@/views/topCoupons'], resolve)
         },
         // 点击量
         {
