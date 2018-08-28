@@ -229,7 +229,7 @@ class Export:
             # os.remove(os.path.join(path, 'click.csv'))
             click.write_csv(df1, path)
         option = ['受访页面']
-        option.extend(df1.columns[1:][[i<=end_date and i>=start_date for i in df1.columns[1:]]])
+        option.extend(df1.columns[1:][[i<end_date and i>=start_date for i in df1.columns[1:]]])
         return df1[option], '点击量'
 
 def main():
