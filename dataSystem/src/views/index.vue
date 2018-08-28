@@ -143,6 +143,12 @@ export default {
         // this.loading = true
         // this.loadingTime()
       }
+      if (key === '/storeRanking') { // 门店排名
+        sessionStorage.setItem('id', 'mdpm')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
       if (key === '/topCoupons') { // 券排名
         sessionStorage.setItem('id', 'qpm')
         this.$store.commit('increment', true)

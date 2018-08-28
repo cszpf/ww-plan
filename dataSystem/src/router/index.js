@@ -66,6 +66,30 @@ export default new Router({
       },
       component: resolve => require(['@/views/lossMerchants'], resolve)
     },
+    // 下线券
+    {
+      path: '/referralsTicket',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/referralsTicket'], resolve)
+    },
+    // 修改券
+    {
+      path: '/amendTicket',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/amendTicket'], resolve)
+    },
+    // 快到期券
+    {
+      path: '/expiredCoupons',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/expiredCoupons'], resolve)
+    },
     // 主页
     {
       path: '/index',
