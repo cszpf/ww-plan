@@ -54,11 +54,11 @@ def getDateClick(date, rule=getRule()):
             for _ in data['statistics']['items']:
                 # type(_) is dict
                 # clicks.append(list(_.values()))
-                clicks.append([_['source'], _['pv']])
+                clicks.append([_['source'], int(_['pv'])])
         else:
             break
     df = pd.DataFrame(clicks,columns=columns)
-    df[columns[1]] = df[columns[1]].apply(int)
+    # df[columns[1]] = df[columns[1]].apply(int)
     return mapping(df, rule)
 
 # 获得一段日期的点击量
@@ -84,7 +84,7 @@ def preDate(startDate1='2018-06-15', endDate1=TODAY):
     return all_click(results.fillna(0))
 
 # 汇总每个页面的所有点击数
-def all_click(df, rules=['首页','支付页','本店券','邻店券']):
+def all_click(df, rules=['首页','支付页','邻店券']):
     df1 = df.copy()
     for _ in rules:
         ss = pd.DataFrame(df[[_ in i for i in df['受访页面']]].sum()).T

@@ -46,7 +46,8 @@ class Export:
             _temp.extend(["b.{}='{}'".format(i,j) for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
             sql1 += ' AND ' + ' AND '.join(_temp)
         sql1result = self.connect.query(self.connect.fenqi, sql1)
-        
+
+        labellist = []#用来放有多少标签的
         for _sub in sql1result:
             dd1 = {}  # 用来存商户门下的所有门店的最近15天的总流水
             dd2 = {}  # 用来存商户门下的流水天数
@@ -55,7 +56,12 @@ class Export:
                 _sub[3] = self.connect.region_code2name(_sub[3]);#行政区
                 _sub[4] = self.connect.region_code2name(_sub[4])#微区域
                 data=[]
-                data.extend([_sub[i] for i in range(2, 8)])#把result每一行的数据_sub放入_data列表中
+                for i in range(2,8):
+                    if _sub[i]:
+                        data.extend([_sub[i]])
+                    else:
+                        data.extend(['-'])
+                #data.extend([_sub[i] for i in range(2, 8)])#把result每一行的数据_sub放入_data列表中
                 sql2 = """SELECT subbranch_id from subbranch WHERE merchant_id='{0}' and state=2 """.format(_sub[0])
                 sql2result = self.connect.query(self.connect.fenqi, sql2)#得到每个商户的所有门店id，再来计算每家店的流水
                 d1 = {}  # 用来存商户门下的所有门店的最近15天的流水
@@ -134,8 +140,10 @@ class Export:
                         label2='券{0}领券数\用券数'.format(countq)
                         if label1 not in columns:
                             columns.append('券{0}标签'.format(countq))
+                            labellist.append('券{0}标签'.format(countq))
                         if label2 not in columns:
                             columns.append('券{0}领券数\用券数'.format(countq))
+                            labellist.append('券{0}领券数\用券数'.format(countq))
                         data.append(bq)
                         d=str(lq)+'\\'+str(bq_yq.get(bq))
                         data.append(d)
@@ -147,11 +155,17 @@ class Export:
         # if not os.path.exists(dir_name):
         #     os.makedirs(dir_name)
         # df = pd.DataFrame(all_data, columns=columns)
+        # for i in labellist:
+        #     if i:
+        #         df[i] = df[i].fillna('-')
         # df.to_csv(os.path.join(dir_name, 'shqxq.csv'), index=False, encoding='gbk', sep=',')
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
         df = pd.DataFrame(all_data, columns=columns)
+        for i in labellist:
+            if i:
+                df[i] = df[i].fillna('-')
         return df,'商户券详情'
 
 
@@ -336,12 +350,12 @@ class Export:
 def main():
     export = Export()
     opt = {
-        'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043'
+       # 'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043'
     }
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
     #export.shqxq('2017-5-18','2018-8-28', r'\Users\16538\Desktop', opt)
-    #export.shqxq('2018-6-18', '2018-8-28', r'\Users\qiqi\Desktop', opt)
-    export.mdpm('2016-1-03', '2018-05-07', r'\Users\16538\Desktop')
+    export.shqxq('2018-4-18', '2018-6-28', r'\Users\qiqi\Desktop', opt)
+    #export.mdpm('2016-1-03', '2018-05-07', r'\Users\16538\Desktop')
 
 if __name__ == '__main__':
     main()
