@@ -7,8 +7,8 @@ payFrom=coupons   支付页（优惠券来源）
 /h5/cardevo/index.html#/stageCard?indexFrom=menu       首页（菜单来源）
 /h5/cardevo/index.html#/stageCard?indexFrom=msgTemplate       首页（消息模板来源）
 /h5/cardevo/index.html#/stageCard?indexFrom=paySuccess       首页（支付成功来源）
-/h5/card/pay/couponDetail.html?localCoupInfoFrom=index     本店券（所有点击）
-/h5/card/pay/couponDetail.html?unionCoupInfoFrom=index     邻店券（首页来源）
-/h5/card/pay/couponDetail.html?unionCoupInfoFrom=msgTemplate     邻店券（消息模板来源）
-/h5/cardevo/index.html#/payAttention?attenType=1&inviteCode   长按关注页面
 test.fenqi.52wxr.com/    测试页面
+localCoupInfoFrom=index     本店券（所有点击）
+unionCoupInfoFrom=index     邻店券（首页来源）
+unionCoupInfoFrom=msgTemplate     邻店券（消息模板来源）
+/h5/cardevo/index.html#/payAttention?attenType=1&inviteCode   长按关注页面

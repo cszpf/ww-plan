@@ -221,9 +221,10 @@ class Export:
         if not os.path.exists(path):
             path = './static/click'
         df1 = pd.read_csv(os.path.join(path,'click.csv'), encoding='gbk')
-        if end_date > df1.columns[-1]:
-            df2 = click.preDate(df1.columns[-1],end_date).drop(df1.columns[-1],axis=1)
-            df1 = pd.merge(df1,df2,on='受访页面',how='outer', copy=False).fillna(0)
+        last_day = df1.columns[-1]
+        if end_date >= df1.columns[-1]:
+            df2 = click.preDate(df1.columns[-1],end_date)
+            df1 = pd.merge(df1.drop(last_day,axis=1), df2, on='受访页面',how='outer', copy=False).fillna(0)
             click.write_csv(df1, path)
         option = ['受访页面']
         option.extend(df1.columns[1:][[i<end_date and i>=start_date for i in df1.columns[1:]]])

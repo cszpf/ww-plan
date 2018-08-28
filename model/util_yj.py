@@ -242,10 +242,10 @@ class Export:
         return df, '商户用券详情'
 
     def qpm(self, start_date, end_date, dir_name, opt={}):
-        columns = ['指标', 'TOP10\n关注券名称', 'TOP10\n关注券使用数', 'TOP10\n关注券商户名称', 'TOP10\n关注券标签', 'TOP10\n关注券客单价',
-                   'TOP10\n促活券名称', 'TOP10\n促活券使用数', 'TOP10\n促活券商户名称', 'TOP10\n促活券标签', 'TOP10\n促活券客单价',
-                   'TOP10\n邻店券名称', 'TOP10\n邻店券使用数', 'TOP10\n邻店券的发券商户名称', 'TOP10\n邻店券的用券商户名称',
-                   'TOP10\n邻店券标签', 'TOP10\n邻店券客单价']
+        columns = ['指标', '关注券名称', '关注券使用数', '关注券商户名称', '关注券标签', '关注券客单价',
+                   '促活券名称', '促活券使用数', '促活券商户名称', '促活券标签', '促活券客单价',
+                   '邻店券名称', '邻店券使用数', '邻店券的发券商户名称', '邻店券的用券商户名称',
+                   '邻店券标签', '邻店券客单价']
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
         all_data = []

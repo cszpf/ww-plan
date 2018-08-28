@@ -122,8 +122,10 @@ def table_export():
     _cols = [0] # 不处理分页
     if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
-        if ids in ['mdhz']:
+        if ids in ['mdhz', 'qhz']:
             datas = datas[0]
+        elif ids in ['ydqxq']:
+        	datas = datas[-1]
     else:
         if ids in ['all']:
             datas = all2excel(start_date, end_date)[0][0]
