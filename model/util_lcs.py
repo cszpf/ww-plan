@@ -128,6 +128,7 @@ class Export:
                                   AND a.coupons_config_id=e.coupons_config_id AND d.subbranch_id='{}'""".format(all_sub[0])
                 result9 = self.connect.query('', sql9)
                 result10=result10 + result8 + result9
+        #print(result10)
 
         new_merchant_data = []
         merchant_data=[]
@@ -668,7 +669,7 @@ def main():
     }
     opt={}
 
-    print(export.khhz('2018-5-30','2018-6-1','./', opt)[0])
+    print(export.khhz('2018-8-20','2018-8-23','./', opt)[0])
     #print(export.qhz('2018-7-10', '2018-7-15', './', opt)[0])
 if __name__ == '__main__':
     main()
