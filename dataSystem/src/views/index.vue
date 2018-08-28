@@ -55,7 +55,7 @@ export default {
           parentMenuId: '4'
         },
         {
-          name: '商户用劵详情',
+          name: '商户劵详情',
           url: '/commodityCouponsDetails',
           parentMenuId: '5'
         },
@@ -125,8 +125,8 @@ export default {
         // this.loading = true
         // this.loadingTime()
       }
-      if (key === '/commodityCouponsDetail') { // 商户用券详情
-        sessionStorage.setItem('id', 'shyqxq')
+      if (key === '/commodityCouponsDetails') { // 商户券详情
+        sessionStorage.setItem('id', 'shqxq')
         this.$store.commit('increment', true)
         // this.loading = true
         // this.loadingTime()

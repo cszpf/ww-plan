@@ -12,11 +12,15 @@ Vue.use(ElementUI)
 Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
-    path: true
+    path: true,
+    url: 'http://localhost:5000'
   },
   mutations: {
     increment (state, n) {
       state.path = n
+    },
+    pathUrl (state, n) {
+      state.url = n
     }
   }
 })

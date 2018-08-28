@@ -40,6 +40,7 @@
   - sudo apt-get install uwsgi_plugin_python3 
 3. 更改数据库连接方式时，只需更改model/connectTool.py文件
 4. 另外系统默认采用debug模式，部署到生产环境中时需将debug模式置为False,在app.py的最后一行
+5. 部署时需要修改ip,只需要修改datasystem/src/main.js 文件里面的vuex state对象的url键值即可完成全局ip修改
 
 # 开发声明
 1. 详见之前微信群里发的压缩包中的需求说明文档,主要是仿照./model/util.py的Export类中的第一个函数，按照优先级要求实现其余表的导入导出功能。相应表的导入导出函数用该表的拼音命名。如：导出门店流水是mdls.xlsx

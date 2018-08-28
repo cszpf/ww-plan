@@ -102,7 +102,7 @@ export default {
       document.body.removeChild(link)
     },
     getData (datas) {
-      axios({method: 'post', url: 'http://localhost:5000/api/export', data: datas, responseType: 'blob'})
+      axios({method: 'post', url: this.$store.state.url + '/api/export', data: datas, responseType: 'blob'})
         .then(response => {
           this.download(response, datas['ids'])
         })

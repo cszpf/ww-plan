@@ -30,18 +30,17 @@ export default {
   },
   methods: {
     submitForm () {
-      let _this = this
-      const path = 'http://localhost:5000/api/signin'
+      const path = this.$store.state.url + '/api/signin'
       axios.post(path, {username: this.form.username, password: this.form.password})
-        .then(function (response) {
+        .then(response => {
           if (response.data.status === 'ok') {
             sessionStorage.setItem('username', response.data.username)
             sessionStorage.setItem('id', 'mdhz')
-            _this.$store.commit('increment', true)
-            _this.$router.push({path: '/tableList'})
+            this.$store.commit('increment', true)
+            this.$router.push({path: '/tableList'})
           } else {
-            _this.form.password = ''
-            _this.$message.error(response.data.status)
+            this.form.password = ''
+            this.$message.error(response.data.status)
           }
         })
         .catch(function (error) {

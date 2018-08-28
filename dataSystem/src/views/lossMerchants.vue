@@ -129,7 +129,7 @@ export default {
       this.loading = true
       this.dataList = []
       this.dataPageList = []
-      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: this.postData})
+      axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: this.postData})
         .then(response => {
           if (response.data) {
             this.loading = false

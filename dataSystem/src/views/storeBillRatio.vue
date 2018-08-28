@@ -50,7 +50,7 @@ export default {
       this.shopList = []
       this.dataList = []
       this.dataPageList = []
-      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: data})
+      axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: data})
         .then(response => {
           if (response.data) {
             this.loading = false

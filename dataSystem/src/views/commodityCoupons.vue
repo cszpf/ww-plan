@@ -51,7 +51,7 @@ export default {
       this.shopList = []
       this.dataList = []
       this.dataPageList = []
-      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: data})
+      axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: data})
         .then(response => {
           if (response.data) {
             this.loading = false
@@ -114,7 +114,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 8%;
+  width: 10%;
   min-width: 90px;
 }
 .box-list {

@@ -35,16 +35,15 @@ export default {
   },
   methods: {
     submitForm () {
-      let _this = this
-      const path = 'http://localhost:5000/api/pwd'
+      const path = this.$store.state.url + '/api/pwd'
       axios.post(path, {'oldpwd': this.oldpwd, 'newpwd': this.newpwd, 'twice': this.twice})
-        .then(function (response) {
+        .then(response => {
           console.log(response)
           if (response.statusText === 'OK') {
-            _this.$message({message: '修改成功', type: 'success'})
-            _this.$router.push({path: '/login'})
+            this.$message({message: '修改成功', type: 'success'})
+            this.$router.push({path: '/login'})
           } else {
-            _this.$message.error(response.data.status)
+            this.$message.error(response.data.status)
           }
         })
         .catch(function (error) {

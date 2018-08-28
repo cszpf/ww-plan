@@ -136,9 +136,7 @@ export default {
           'MERCHANT_ID': '', // 商户
           'SUBBRANCH_ID': '' // 门店
         },
-        date: [],
-        page: 0,
-        columns: 10
+        date: []
       },
       clearablebl: false,
       timeFrame: ''
@@ -179,7 +177,7 @@ export default {
       document.body.removeChild(link)
     },
     gotoData () {
-      axios({method: 'post', url: 'http://localhost:5000/api/export', data: this.postData, responseType: 'blob'})
+      axios({method: 'post', url: this.$store.state.url + '/api/export', data: this.postData, responseType: 'blob'})
         .then(response => {
           this._download(response, this.postData['ids'])
         })
@@ -200,7 +198,7 @@ export default {
     },
     loadContact () {
       let _this = this
-      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MERCHANT_ID', 'opt': {'MERCHANT_NAME': this.contact}}})
+      axios({method: 'post', url: this.$store.state.url + '/api/databind', data: {'id': 'MERCHANT_ID', 'opt': {'MERCHANT_NAME': this.contact}}})
         .then(function (response) {
           _this.contactList = response.data.MERCHANT_ID
         })
@@ -210,7 +208,7 @@ export default {
     },
     getData () {
       // let _this = this
-      axios({method: 'post', url: 'http://localhost:5000/api/table_export', data: this.postData})
+      axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: this.postData})
         .then(function (response) {
           console.log(response)
         })
@@ -220,7 +218,7 @@ export default {
     },
     loadData (idnmae) { // 筛选条件
       let _this = this
-      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {id: idnmae}})
+      axios({method: 'post', url: this.$store.state.url + '/api/databind', data: {id: idnmae}})
         .then(function (response) {
           if (response.statusText === 'OK') {
             if (idnmae === 'ADMIN_REGION_CODE') {
@@ -261,7 +259,7 @@ export default {
       })
       if (data) {
         _this.microarea = []
-        axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': 'MICRO_REGION_CODE', 'opt': {'ADMIN_REGION_CODE': data.id}}})
+        axios({method: 'post', url: this.$store.state.url + '/api/databind', data: {'id': 'MICRO_REGION_CODE', 'opt': {'ADMIN_REGION_CODE': data.id}}})
           .then(function (response) {
             if (response.statusText === 'OK') {
               _this.microarea = response.data.MICRO_REGION_CODE
@@ -322,7 +320,7 @@ export default {
       let _this = this
       this.screening(contactListBl, this.tags, data, contactLisType)
       this.postData.opt.MERCHANT_ID = data.id
-      axios({method: 'post', url: 'http://localhost:5000/api/databind', data: {'id': ' SUBBRANCH_ID', 'opt': {'MERCHANT_ID': data.id}}})
+      axios({method: 'post', url: this.$store.state.url + '/api/databind', data: {'id': ' SUBBRANCH_ID', 'opt': {'MERCHANT_ID': data.id}}})
         .then(function (response) {
           _this.shopnameList = response.data.SUBBRANCH_ID
         })
