@@ -97,7 +97,8 @@ def all_click(df, rules=['首页','支付页','邻店券']):
 def write_csv(df, path='../static/click'):
     if not os.path.exists(path):
         os.makedirs(path)
-    df.to_csv(os.path.join(path,'click.csv'), index=False, encoding='GBK')
+        pd.DataFrame.to_csv()
+    df.to_csv(os.path.join(path,'click.csv'), index=False, encoding='GBK', float_format='%.f')
     print('saving data has finished!')
 
 if __name__ == '__main__':

@@ -221,13 +221,15 @@ class Export:
         if not os.path.exists(path):
             path = './static/click'
         df1 = pd.read_csv(os.path.join(path,'click.csv'), encoding='gbk')
-        last_day = df1.columns[-1]
-        if end_date >= df1.columns[-1]:
-            df2 = click.preDate(df1.columns[-1],end_date)
-            df1 = pd.merge(df1.drop(last_day,axis=1), df2, on='受访页面',how='outer', copy=False).fillna(0)
+        last_day = datetime.datetime.strptime(df1.columns[-1],'%Y-%m-%d')
+        end_day = datetime.datetime.strptime(end_date,'%Y-%m-%d')
+        if (end_day - last_day).days > 1:
+            df2 = click.preDate(df1.columns[-1], end_date)
+            df1 = pd.merge(df1.drop(df1.columns[-1], axis=1), df2, on='受访页面', how='outer', copy=False).fillna(0)
+            # os.remove(os.path.join(path, 'click.csv'))
             click.write_csv(df1, path)
         option = ['受访页面']
-        option.extend(df1.columns[1:][[i<end_date and i>=start_date for i in df1.columns[1:]]])
+        option.extend(df1.columns[1:][[i<=end_date and i>=start_date for i in df1.columns[1:]]])
         return df1[option], '点击量'
 
 def main():

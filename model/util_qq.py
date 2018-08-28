@@ -171,9 +171,9 @@ class Export:
 
     def mdpm(self, start_date, end_date, dir_name,opt={}):
         indexs = []
-        indexs.extend(['指标', 'TOP10活跃门店名称', 'TOP10活跃门店活跃天数', 'TOP10流水门店名称', 'TP10流水门店流水'
-                      , 'TOP10用券次数门店名称','TOP10用券次数门店总用券次数', 'TOP10用券次数门店客单价',
-                       'TOP10客单价门店名称', 'TOP10客单价门店客单价'])
+        indexs.extend(['排名', '活跃门店名称', '活跃门店活跃天数', '流水门店名称', '流水门店流水'
+                      , '用券次数门店名称','用券次数门店总用券次数', '用券次数门店客单价',
+                       '客单价门店名称', '客单价门店客单价'])
         all_data = []
         top = ['TOP1', 'TOP2', 'TOP3', 'TOP4', 'TOP5', 'TOP6', 'TOP7', 'TOP8', 'TOP9', 'TOP10', 'TOP10门店流水总比重']
         all_data.append(top)
