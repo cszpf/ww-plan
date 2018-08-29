@@ -84,7 +84,7 @@ def preDate(startDate1='2018-06-15', endDate1=TODAY):
     return all_click(results.fillna(0))
 
 # 汇总每个页面的所有点击数
-def all_click(df, rules=['首页','支付页','邻店券']):
+def all_click(df, rules=['首页（', '支付页（', '邻店券（']):
     df1 = df.copy()
     for _ in rules:
         ss = pd.DataFrame(df[[_ in i for i in df['受访页面']]].sum()).T
