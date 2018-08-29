@@ -417,7 +417,6 @@ class Export:
                 lssh_num = 0
             _data.extend([hymd_num, hymd_zb, cmmd_num, ydsh_num, lssh_num])
             all_data.append(_data)
-            print(i+1)
         df = pd.DataFrame(all_data,index = indexs, columns = pd.Index(columns, name = '指标'))
         df = df.stack().unstack(0)
         return [df,hymd_data,cmmd_data,ydsh_data,lssh_data],['门店汇总','活跃门店','沉默门店','异动商户','流失商户']
