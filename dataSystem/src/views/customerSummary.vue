@@ -66,6 +66,7 @@ export default {
   methods: {
     loadData (data) {
       this.loading = true
+      this.page = 0
       console.log(data)
       this.shopList = []
       this.dataList = []

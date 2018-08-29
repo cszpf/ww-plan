@@ -119,6 +119,7 @@ export default {
     },
     loadData () {
       this.loading = true
+      this.page = 0
       this.shopList = []
       this.dataList = []
       this.dataPageList = []

@@ -7,7 +7,7 @@
       </el-form-item>
     </el-form>
     <div class="stroetop">
-      <div class="stroetop-table" v-for="(item, index) in dataList" :key="index">
+      <div :class="[item._boeder == 2?'td-border':'','stroetop-table']" v-for="(item, index) in dataList" :key="index">
         <div class="stroetop-td">{{item._key}}</div>
         <div></div>
       </div>
@@ -103,6 +103,7 @@ export default {
     },
     loadData () {
       this.loading = true
+      this.page = 0
       this.dataList = []
       axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: this.postData})
         .then(response => {
@@ -130,7 +131,7 @@ export default {
             }
             if (index === 9) {
               item['_boeder'] = 2
-            }                                            
+            }
             console.log(item)
           })
           // console.log(this.dataList)
@@ -161,9 +162,12 @@ export default {
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
+  padding: 10px;
 }
 stroetop-td {
   padding: 5px;
-  min-width: 50px;
+}
+.td-border {
+  border-right: 1px solid #dddddd
 }
 </style>

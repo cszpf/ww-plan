@@ -127,6 +127,7 @@ export default {
     loadData () {
       this.loadBl = false
       this.loading = true
+      this.page = 0
       this.dataList = []
       this.dataPageList = []
       axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: this.postData})

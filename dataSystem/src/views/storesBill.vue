@@ -46,12 +46,13 @@ export default {
   methods: {
     loadData (data) {
       this.loading = true
+      this.page = 0
       console.log(data)
       this.shopList = []
       this.dataList = []
       this.dataPageList = []
       // let _this = this
-      axios({method: 'post', url: this.$store.state.url + '0/api/table_export', data: data})
+      axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: data})
         .then(response => {
           if (response.data) {
             this.loading = false
