@@ -11,6 +11,7 @@ sys.path.append('./model')
 from databind import Databind
 from util import Export
 from util_lz import Export as Export_lz
+from util_yj import Export as Export_yj
 import pandas as pd
 cwd = os.getcwd()
 # jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
@@ -23,6 +24,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 _export = Export()
 _databind = Databind()
 _export_lz = Export_lz()
+_export_yj = Export_yj()
 
 def write_log():
     app.logger.info('info log')
@@ -121,18 +123,19 @@ def table_export():
     else:
     	_cols = []
     _cols = [0] # 不处理分页
-    if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh']:
+    if ids not in ['all', 'hymd', 'cmmd', 'ydsh', 'lssh', 'kdqq', 'xgq', 'xxq']:
         datas = eval('''_export.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))[0]
         if ids in ['mdhz', 'qhz']:
             datas = datas[0]
-        elif ids in ['ydqxq']:
-        	datas = datas[-1]
     else:
         if ids in ['all']:
             datas = all2excel(start_date, end_date)[0][0]
-        else:
+        elif ids in ['hymd', 'cmmd', 'ydsh', 'lssh']:
             datas = eval('''_export_lz.{ids}(start_date,end_date,'static',opt)'''.format(ids=ids))
-    if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm']:
+        elif ids in ['kdqq', 'xgq', 'xxq']:
+            datas = _export_yj.ydqxq(start_date, end_date, 'static', opt)[0]
+            datas = datas[['kdqq', 'xgq', 'xxq'].index(ids)]
+    if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm', 'kdqq', 'xgq', 'xxq']:
     	_cols = list(range(len(datas.columns)))
     else:
         # 处理分页

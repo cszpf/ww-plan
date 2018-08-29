@@ -367,7 +367,7 @@ def main():
     export = Export()
     # opt = {'MERCHANT_ID':'yifanmeirongMerchant'}
     # opt = {'MERCHANT_TYPE':1}
-    export.shyq('2018-6-20','2018-7-21','./', opt)
+    export.shyq('2018-6-20','2018-7-21','./', opt={})
     # export.qpm('2018-7-1','2018-7-21','./')
     # export.ydqxq('2018-6-1', '2018-7-16', './')
 
