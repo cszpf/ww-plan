@@ -4,6 +4,7 @@
         <el-form-item label="日期 :">
           <el-date-picker :clearable="clearablebl" :picker-options="pickerOptions0" v-model="date" type="daterange" placeholder="选择日期" size="small" value-format="yyyy-MM-dd" format="yyyy-MM-dd" @change="dateData">
           </el-date-picker>
+          <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button>
         </el-form-item>
       </el-form>
       <div class="overflow-height" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
@@ -105,6 +106,25 @@ export default {
     this.loadData()
   },
   methods: {
+    _download (data, ids) {
+      let url = window.URL.createObjectURL(new Blob([data.data]))
+      let link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      link.setAttribute('download', '' + ids + '.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
+    gotoData () {
+      axios({method: 'post', url: this.$store.state.url + '/api/export', data: this.postData, responseType: 'blob'})
+        .then(response => {
+          this._download(response, this.postData['ids'])
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
     formatDate  (date) {
       let y = date.getFullYear()
       let m = date.getMonth() + 1
@@ -128,13 +148,14 @@ export default {
           if (response.data) {
             this.loading = false
           }
-          console.log(response)
-          console.log(response.data)
+          // console.log(response)
+          // console.log(response.data)
           this.shopList = response.data.splice(0, 1)
           console.log(this.shopList)
           this.dataList = response.data
           console.log(this.dataList)
-          this.dataPageList = response.data.slice(this.page * 10, 10)
+          console.log(response.data)
+          this.dataPageList = this.dataList.slice(this.page * 10, 10)
           console.log(this.dataPageList)
         })
         .catch(function (error) {
@@ -179,7 +200,7 @@ table th {
 .box {
   /* width: 90%; */
   /* margin: 15px; */
-  /* min-width: 1000px; */
+  min-width: 300px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -255,10 +276,11 @@ table th {
   opacity: 0.7;
   background: #dddddd;
 }
-/* .overflow-height {
-  max-height: 600px;
-  overflow-y: auto;
-  min-width:1000px;
+.overflow-height {
   min-height: 300px;
-} */
+}
+.guidetable {
+  float: right;
+  margin-right: 25px;
+}
 </style>

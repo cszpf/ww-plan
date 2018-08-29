@@ -4,12 +4,13 @@
       <el-form-item label="日期 :">
         <el-date-picker :clearable="clearablebl" :picker-options="pickerOptions0" v-model="date" type="daterange" placeholder="选择日期" size="small" value-format="yyyy-MM-dd" format="yyyy-MM-dd" @change="dateData">
         </el-date-picker>
+        <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button>
       </el-form-item>
     </el-form>
-    <div class="stroetop">
+    <div class="stroetop" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
       <div :class="[item._boeder == 2?'td-border':'','stroetop-table']" v-for="(item, index) in dataList" :key="index">
-        <div class="stroetop-td">{{item._key}}</div>
-        <div></div>
+        <div class="stroetop-td stroetop-boeder">{{item._key}}</div>
+        <div class="stroetop-td" v-for="(items, indexs) in item._data" :key="indexs">{{items}}</div>
       </div>
     </div>
   </div>
@@ -89,6 +90,25 @@ export default {
     this.loadData()
   },
   methods: {
+    _download (data, ids) {
+      let url = window.URL.createObjectURL(new Blob([data.data]))
+      let link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      link.setAttribute('download', '' + ids + '.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
+    gotoData () {
+      axios({method: 'post', url: this.$store.state.url + '/api/export', data: this.postData, responseType: 'blob'})
+        .then(response => {
+          this._download(response, this.postData['ids'])
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
+    },
     formatDate  (date) {
       let y = date.getFullYear()
       let m = date.getMonth() + 1
@@ -147,6 +167,8 @@ export default {
 </script>
 <style scoped>
 #storeRanking {
+  padding: 15px;
+  font-size: 14px;
   width: 100%;
   height: 100vh;
 }
@@ -156,18 +178,35 @@ export default {
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
+  min-height: 300px;
 }
 .stroetop-table {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
-  align-items: flex-start;
-  padding: 10px;
+  width: 10%;
+  min-width: 90px;
 }
-stroetop-td {
-  padding: 5px;
+.stroetop-td {
+  height: 40px;
+  /* line-height: 40px; */
+  /* min-width: 80px; */
+  width: 100%;
+  word-wrap:break-word;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 .td-border {
   border-right: 1px solid #dddddd
+}
+.stroetop-boeder {
+  border-bottom: 1px solid #dddddd;
+}
+.guidetable {
+  float: right;
+  margin-right: 25px;
 }
 </style>
