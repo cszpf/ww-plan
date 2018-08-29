@@ -257,18 +257,18 @@ class Export:
             #新增、累计邻店带客数
             for _sub in result10:
                 if _sub[0] != '':
-                    if _sub[1]==x :
+                    if _sub[1].date()==x :
                         count_new_neighbor+=1
-                    if _sub[1]<=x :
+                    if _sub[1].date()<=x :
                         count_neighbor+=1
             #新增、累计关注券消费的客单价
             GZ = '145556'
             CH = '145558'
             for _sub in result10:
                 if _sub[3] == '145556':
-                    if _sub[1]==x :
+                    if _sub[1].date()==x :
                         count_new_attention+=_sub[2]
-                    if _sub[1]<=x :
+                    if _sub[1].date()<=x :
                         count_attention += _sub[2]
                         count_att += 1
             if count_att!=0:
@@ -282,9 +282,9 @@ class Export:
             CH = '145558'
             for _sub in result10:
                 if _sub[3] == '145558':
-                    if _sub[1] == x :
+                    if _sub[1].date() == x :
                         count_new_promote += _sub[2]
-                    if _sub[1] <= x :
+                    if _sub[1].date() <= x :
                         count_promote += _sub[2]
                         count_pro += 1
             if count_pro!=0:
@@ -296,9 +296,9 @@ class Export:
             # 新增、累计邻店券消费的客单价
             for _sub in result10:
                 if _sub[0] != '':
-                    if _sub[1] == x :
+                    if _sub[1].date() == x :
                         count_new_neighbor1 += _sub[2]
-                    if _sub[1] <= x :
+                    if _sub[1].date() <= x :
                         count_neighbor1+= _sub[2]
                         count_neigh += 1
             if count_neigh!=0:
@@ -667,7 +667,7 @@ def main():
     opt = {
     'ADMIN_REGION_CODE':'2100'
     }
-    opt={}
+    #opt={}
 
     print(export.khhz('2018-8-20','2018-8-23','./', opt)[0])
     #print(export.qhz('2018-7-10', '2018-7-15', './', opt)[0])
