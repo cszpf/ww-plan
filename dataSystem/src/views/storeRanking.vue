@@ -167,7 +167,8 @@ export default {
 </script>
 <style scoped>
 #storeRanking {
-  padding: 15px;
+  margin-top: 15px;
+  padding-right: 0;
   font-size: 14px;
   width: 100%;
   height: 100vh;
