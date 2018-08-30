@@ -120,7 +120,7 @@ export default {
   height: 40px;
   /* line-height: 40px; */
   /* min-width: 120px; */
-  width: 100%;
+  /* width: 100%; */
   border-right: 1px solid #dddddd;
   text-align: center;
   word-wrap:break-word;
@@ -137,7 +137,7 @@ export default {
   height: 40px;
   /* line-height: 40px; */
   /* min-width: 80px; */
-  width: 100%;
+  /* width: 100%; */
   word-wrap:break-word;
   text-align: center;
   display: flex;
@@ -152,10 +152,12 @@ export default {
 .box-left {
   width: 2%;
   min-width: 10px;
-  line-height: 40px;
+  /* line-height: 40px; */
   height: 40px;
-  text-align: center;
-  vertical-align: middle;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   border-bottom: 1px solid #dddddd;
   cursor: pointer;
   padding: 5px;
@@ -163,10 +165,12 @@ export default {
 .box-right {
   width: 2%;
   min-width: 10px;
-  line-height: 40px;
+  /* line-height: 40px; */
   height: 40px;
-  text-align: center;
-  vertical-align: middle;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   border-bottom: 1px solid #dddddd;
   cursor: pointer;
   padding: 5px;

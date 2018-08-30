@@ -5,7 +5,7 @@
       <el-form-item label="日期 :">
         <el-date-picker :clearable="clearablebl" :picker-options="pickerOptions0" v-model="date" type="daterange" placeholder="选择日期" size="small" value-format="yyyy-MM-dd" format="yyyy-MM-dd" @change="dateData">
         </el-date-picker>
-        <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button>
+        <!-- <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button> -->
       </el-form-item>
     </el-form>
     <div class="stroetop" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
