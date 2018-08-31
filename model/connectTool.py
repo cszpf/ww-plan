@@ -1,7 +1,10 @@
 import MySQLdb
 class connect:
     def __init__(self):
+    	# 测试数据
         self.fenqi, self.coupons = 'fenqi', 'coupons'
+        # 真实数据
+        # self.fenqi, self.coupons = 'ali_fenqi', 'ali_coupons'
         # 大学城数据库
         self.ip1, self.user1, self.pwd1, self.port1 = '183.3.143.131', 'root', 'Wangwang@scut123', 552
         # 汪汪本地数据库
