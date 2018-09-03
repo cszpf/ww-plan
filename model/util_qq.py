@@ -47,7 +47,7 @@ class Export:
             sql1 += ' AND ' + ' AND '.join(_temp)
         sql1result = self.connect.query(self.connect.fenqi, sql1)
 
-        labellist = []#用来放有多少标签的
+        labellist = []#用来放有多少标签的，便于补充‘-’
         for _sub in sql1result:
             dd1 = {}  # 用来存商户门下的所有门店的最近15天的总流水
             dd2 = {}  # 用来存商户门下的流水天数
@@ -98,41 +98,62 @@ class Export:
                     data.extend([dd1.get(_sub[0]), dd2.get(_sub[0])])  # 增加商户近15天流水和天数
                 else:
                     data.extend([0, dd2.get(_sub[0])])#增加商户近15天流水和天数
+
+                #每一个商户
                 bq_lq={}#装标签的name和领券数
                 bq_yq={}#装标签的name和用券数
+                bq=[]#所有的标签id集合
                 sql3="""SELECT coupons_config_id from coupons_config
                         WHERE merchant_id='{0}'""".format(_sub[0])
                 sql3result = self.connect.query(self.connect.coupons, sql3)#得到每一个商户的优惠券配置id
                 for pzid in sql3result:
+                    #print(pzid)
                     if pzid:
                         sql4="""SELECT label_id 
                                 FROM coupons_cfg_label_rela
                                 WHERE coupons_config_id='{0}'""".format(pzid[0])
                         sql4result = self.connect.query(self.connect.coupons, sql4)  # 得到每一个优惠券配置id对应的标签id
-                        for bqid in sql4result:
-                            if bqid:
-                                sql5="""SELECT label_name FROM labels WHERE label_id='{0}'""".format(bqid[0])
-                                sql5result = self.connect.query(self.connect.coupons, sql5)#得到该标签名称
-                                sql6="""SELECT coupons_config_id 
-                                        from coupons_cfg_label_rela
-                                         WHERE label_id='{0}'""".format(bqid[0])
-                                sql6result = self.connect.query(self.connect.coupons, sql6)  # 得到该标签对应多少个优惠券配置id
-                                for i in sql6result:
-                                    if i:
-                                        sql6_6="""select merchant_id from coupons_config
-                                                    WHERE coupons_config_id='{0}'""".format(i[0])
-                                        sql6_6result = self.connect.query(self.connect.coupons, sql6_6)#返回该优惠券配置id属于哪个商户
-                                        if sql6_6result[0][0]==_sub[0]:#如果为本循环下的商户，则计算该标签的领券数和用券数目
-                                            sql7="""SELECT COUNT(*) FROM coupons
-                                                            WHERE coupons_config_id='{0}'
-                                                            AND create_time between '{1}' and '{2}'""".format(i[0],start_date,end_date1)
-                                            sql7result = self.connect.query(self.connect.coupons, sql7)#得到该配置id有多少张券被领了
-                                            sql8="""SELECT COUNT(*) FROM coupons
-                                                    WHERE coupons_config_id='{0}' and `status`=1
-                                                    AND create_time between '{1}' and '{2}'""".format(i[0],start_date,end_date1)
-                                            sql8result = self.connect.query(self.connect.coupons, sql8)  # 得到该配置id有多少张券被用了
-                                            bq_lq.update({sql5result[0][0]:sql7result[0][0]})
-                                            bq_yq.update({sql5result[0][0]:sql8result[0][0]})
+                        #print(sql4result)
+                        bq.extend([i[0] for i in sql4result]) #每一个优惠券对应的标签都放进去
+                #print(bq)
+                #print(set(bq))
+                #相等于遍历一个商户的所有标签id
+                for bqid in set(bq):
+                    if bqid:
+                        lq_count = 0  # 记录领券和用券总数
+                        yq_count = 0
+                        #print(bqid)
+                        sql5 = """SELECT label_name FROM labels WHERE label_id='{0}'""".format(bqid)
+                        sql5result = self.connect.query(self.connect.coupons, sql5)  # 得到该标签名称
+                        #print(sql5result)
+                        sql6 = """SELECT coupons_config_id from coupons_cfg_label_rela
+                                  WHERE label_id='{0}'""".format(bqid)
+                        sql6result = self.connect.query(self.connect.coupons, sql6)  # 得到该标签对应多少个优惠券配置id
+                        #print('coupons_config_id:{0}'.format(sql6result))
+                        for i in sql6result:
+                            if i:
+                                sql6_6 = """select merchant_id from coupons_config 
+                                WHERE coupons_config_id='{0}'""".format(i[0])
+                                sql6_6result = self.connect.query(self.connect.coupons, sql6_6)  # 返回该优惠券配置id属于哪个商户
+                                #print("d")
+                                #print(sql6_6result)
+                                if sql6_6result[0][0] == _sub[0]:  # 如果为本循环下的商户，则计算该标签所对应的配置id对应的优惠券的领券数和用券数目
+                                    #print(i[0])
+                                    #print("t")
+                                    sql7 = """SELECT COUNT(*) FROM coupons WHERE 
+                                    coupons_config_id='{0}' AND create_time between '{1}' and 
+                                    '{2}'""".format(i[0], start_date, end_date1)
+                                    sql7result = self.connect.query(self.connect.coupons, sql7)  # 得到该配置id有多少张券被领了
+                                    sql8 = """SELECT COUNT(*) FROM coupons WHERE coupons_config_id='{0}' and `status`=1
+                                              AND create_time between '{1}' and '{2}'""".format(i[0], start_date, end_date1)
+                                    sql8result = self.connect.query(self.connect.coupons, sql8)  # 得到该配置id有多少张券被用了
+                                    #print("the re7 is {0},and the re8 is {1}".format(sql7result[0][0], sql8result[0][0]))
+                                    lq_count = lq_count + sql7result[0][0]
+                                    yq_count = yq_count + sql8result[0][0]
+                        #print("the re77 is {0},and the re88 is {1}".format(lq_count, yq_count))
+                        bq_lq.update({sql5result[0][0]: lq_count})
+                        bq_yq.update({sql5result[0][0]: yq_count})
+
                 countq=1
                 for bq,lq in bq_lq.items():
                     if bq:
@@ -350,11 +371,12 @@ class Export:
 def main():
     export = Export()
     opt = {
-       # 'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043'
+       # 'SUBBRANCH_ID': '91dc20c9adac4035a4c1b7964792b043',
+        #'MERCHANT_ID': 'ed3325d31cea4333b62b76eafeb426e5'
     }
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
     #export.shqxq('2017-5-18','2018-8-28', r'\Users\16538\Desktop', opt)
-    export.shqxq('2018-4-18', '2018-6-28', r'\Users\qiqi\Desktop', opt)
+    export.shqxq('2018-4-18', '2018-9-28', r'\Users\qiqi\Desktop', opt)
     #export.mdpm('2016-1-03', '2018-05-07', r'\Users\16538\Desktop')
 
 if __name__ == '__main__':
