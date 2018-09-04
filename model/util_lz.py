@@ -198,7 +198,7 @@ class Export:
                 for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
             sql1 += ' AND ' + ' AND '.join(_temp) 
             sql2 += ' AND ' + ' AND '.join(_temp)
-        result1 = self.connect.query(self.connect.fenqi, sql1.format(fenqi=self.connect.fenqi,coupons=self.connect.coupons))
+        result1 = self.connect.query('', sql1.format(fenqi=self.connect.fenqi,coupons=self.connect.coupons))
         result2 = self.connect.query(self.connect.fenqi, sql2)
         data.extend(result1)
         data.extend(result2)
