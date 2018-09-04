@@ -135,7 +135,7 @@ def table_export():
         elif ids in ['kdqq', 'xgq', 'xxq']:
             datas = _export_yj.ydqxq(start_date, end_date, 'static', opt)[0]
             datas = datas[['kdqq', 'xgq', 'xxq'].index(ids)]
-    datas.fillna('')
+    datas.fillna('',inplace=True)
     if ids in ['ydsh', 'lssh', 'hymd', 'cmmd', 'shyq', 'mdpm', 'shqxq', 'qpm', 'kdqq', 'xgq', 'xxq']:
     	_cols = list(range(len(datas.columns)))
     else:
