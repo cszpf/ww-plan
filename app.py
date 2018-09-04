@@ -155,7 +155,7 @@ def databind():
 def dataformat(datas):
     def _format(x):
         try:
-            return round(x,3)
+            return round(float(x), 3)
         except:
             try:
                 return str(x)

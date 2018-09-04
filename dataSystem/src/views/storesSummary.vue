@@ -92,7 +92,7 @@ export default {
           }
           console.log(response)
           console.log(response.data)
-          response.data.splice(0, 1)
+          // response.data.splice(0, 1)
           this.dataList = response.data
           console.log(this.dataList)
           if (this.dataList.length <= 10) {
