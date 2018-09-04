@@ -428,10 +428,16 @@ def main():
     #export.mdls('2018-8-1','2018-8-15','./')
     #export.mdlszb('2018-6-1','2018-6-4','./')
     #export.cmmd('2018-8-20','2018-8-23','./')
-    #export.hymd('2018-8-1','2018-8-15','./')
+    a = export.hymd('2018-6-1','2018-9-15','./')
+    def mapformat(x):
+        try:
+            return round(x,3)
+        except:
+            return str(x)
+    
     #export.ydsh('2018-6-1','2018-6-10','./')
     #export.lssh('2018-7-11','2018-7-28','./')
-    export.mdhz('2018-8-20','2018-8-23','./')
+    #export.mdhz('2018-8-20','2018-8-23','./')
 
 if __name__ == '__main__':
     main()
