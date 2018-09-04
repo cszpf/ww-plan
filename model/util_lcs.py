@@ -393,8 +393,9 @@ class Export:
         else:
             data_qqd.append('-')
         # print(data_qqd)
+        result_label = ()
+        result = ()
         if opt:
-            result_label = ();result=()
             for all_sub in result1:
                 if all_sub:
                     all_sub = list(all_sub)

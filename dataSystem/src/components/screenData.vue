@@ -351,54 +351,55 @@ export default {
       this.postData.opt.SUBBRANCH_ID = data.id
     },
     handleClose (type, index) {
+      console.log(type)
       this.tags.splice(index, 1)
       if (type === 'ADMIN_REGION_CODE') {
         this.adminiIndex = ''
-        this.loadData.ADMIN_REGION_CODE = ''
+        this.postData.opt.ADMIN_REGION_CODE = ''
         this.tags.forEach((item, index) => {
           if (item.type === 'MICRO_REGION_CODE') {
             this.tags.splice(index, 1)
             this.microareaindex = ''
-            this.loadData.MICRO_REGION_CODE = ''
+            this.postData.opt.MICRO_REGION_CODE = ''
             this.microarea = []
           }
         })
       }
       if (type === 'MICRO_REGION_CODE') {
         this.microareaindex = ''
-        this.loadData.MICRO_REGION_CODE = ''
+        this.postData.opt.MICRO_REGION_CODE = ''
       }
       if (type === 'MERCHANT_TYPE') {
         this.tradeindex = ''
-        this.loadData.MERCHANT_TYPE = ''
+        this.postData.opt.MERCHANT_TYPE = ''
       }
       if (type === 'SALE_NAME') {
         this.salesManagerindex = ''
-        this.loadData.ALE_NAME = ''
+        this.postData.opt.SALE_NAME = ''
       }
       if (type === 'OPERATOR_NAME') {
         this.operationManagerindex = ''
-        this.loadData.OPERATOR_NAME = ''
+        this.postData.opt.OPERATOR_NAME = ''
       }
       if (type === 'SUBBRANCH_PROP') {
         this.storeAttributesindex = ''
-        this.loadData.SUBBRANCH_PROP = ''
+        this.postData.opt.SUBBRANCH_PROP = ''
       }
       if (type === 'MERCHANT_ID') {
         this.contactListindex = ''
-        this.loadData.MERCHANT_ID = ''
+        this.postData.opt.MERCHANT_ID = ''
         this.tags.forEach((item, index) => {
           if (item.type === 'SUBBRANCH_ID') {
             this.tags.splice(index, 1)
             this.shopnameListindex = ''
-            this.loadData.SUBBRANCH_ID = ''
+            this.postData.opt.SUBBRANCH_ID = ''
             this.shopnameList = []
           }
         })
       }
       if (type === 'SUBBRANCH_ID') {
         this.shopnameListindex = ''
-        this.loadData.SUBBRANCH_ID = ''
+        this.postData.opt.SUBBRANCH_ID = ''
       }
     }
   }
