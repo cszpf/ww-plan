@@ -320,7 +320,7 @@ class Export:
         for i in range((end_date-start_date).days):
             curr_date = start_date + datetime.timedelta(i)  #不含当天,当天零时
             sql_kdq = '''select name, merchant_id, coupons_config_id, publish_end_date from coupons_config 
-            where expire_date is not null and datediff(expire_date,'{}')=10'''.format(curr_date)
+            where expire_date is not null and datediff(expire_date,'{}')=10 and expire_date>='{}';'''.format(curr_date, end_date)
             result = self.connect.query(self.connect.coupons, sql_kdq)
             for x in range(len(result)):
                 # curr_date2 = start_date + datetime.timedelta(i+1)   #含当天,次日零时 算表的日期之前的领券量可用
@@ -367,9 +367,9 @@ def main():
     export = Export()
     # opt = {'MERCHANT_ID':'yifanmeirongMerchant'}
     # opt = {'MERCHANT_TYPE':1}
-    export.shyq('2018-6-20','2018-7-21','./', opt={})
+    # export.shyq('2018-6-20','2018-7-21','./', opt={})
     # export.qpm('2018-7-1','2018-7-21','./')
-    # export.ydqxq('2018-6-1', '2018-7-16', './')
+    export.ydqxq('2018-8-1', '2018-9-1', './')
 
 if __name__ == '__main__':
     main()
