@@ -157,6 +157,9 @@ def dataformat(datas):
 			return round(x,3)
 		except:
 			return str(x)
+		finally:
+			return x
+        
 
 	datas = datas.applymap(_format)
 	_json = [{'_key':i, '_data':list(datas[i])} for i in datas.columns]
