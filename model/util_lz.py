@@ -184,7 +184,7 @@ class Export:
             x = start_date + datetime.timedelta(i)
             indexs.append(x.strftime("%y%m%d"))
         sql1 = """SELECT a.merchant_id, short_name, update_time
-        FROM fenqi.merchant a, coupons.coupons_config b, fenqi.subbranch c, fenqi.merchant_industry d
+        FROM {fenqi}.merchant a, {coupons}.coupons_config b, {fenqi}.subbranch c, {fenqi}.merchant_industry d
         WHERE a.merchant_id = b.merchant_id AND a.merchant_id = c.merchant_id 
         AND a.merchant_type = d.merchant_type AND c.sub_type = 1 AND c.create_time IS NOT NULL """
         sql2 = """SELECT a.merchant_id, short_name, b.create_time
@@ -198,7 +198,7 @@ class Export:
                 for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
             sql1 += ' AND ' + ' AND '.join(_temp) 
             sql2 += ' AND ' + ' AND '.join(_temp)
-        result1 = self.connect.query(self.connect.fenqi, sql1)
+        result1 = self.connect.query(self.connect.fenqi, sql1.format(fenqi=self.connect.fenqi,coupons=self.connect.coupons))
         result2 = self.connect.query(self.connect.fenqi, sql2)
         data.extend(result1)
         data.extend(result2)

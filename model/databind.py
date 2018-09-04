@@ -61,4 +61,5 @@ class Databind:
 
 if __name__ == '__main__':
     databind = Databind()
-    print(databind.ADMIN_REGION_CODE(''))
+    print('分期数据库为：',databind.connect.fenqi)
+    # print(databind.ADMIN_REGION_CODE(''))
