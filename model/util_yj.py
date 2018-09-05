@@ -342,8 +342,7 @@ class Export:
             all_data2.append([res[0].strftime("%y%m%d"), res[1], dict_id2name[res[2]],
                               self.connect.cou_cfg_id2label(res[3]),get_num, get_num2, res[4].strftime("%y%m%d")])
         #下线
-        sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config 
-        where publish_end_date>'{}' and publish_end_date<'{}';'''.format(start_date, end_date)
+        sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config where status=3;'''
         result = self.connect.query(self.connect.coupons, sql_xx)
         for res in result:
             sql_xx = sql_coupons_num.format(start_date, res[3])
