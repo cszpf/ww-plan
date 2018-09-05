@@ -331,8 +331,8 @@ class Export:
                 all_data1.append([curr_date.strftime("%y%m%d"), result[x][0], dict_id2name[result[x][1]],
                               self.connect.cou_cfg_id2label(result[x][2]), get_num, get_num2, result[x][3].strftime("%y%m%d")])
         #修改
-        sql_xg = '''select update_time, name, merchant_id, coupons_config_id, publish_end_date 
-        from coupons_config where update_time > '{}' and update_time < '{}';'''.format(start_date, end_date)
+        sql_xg = '''select update_time, name, merchant_id, coupons_config_id, publish_end_date from coupons_config 
+        where create_time is not null and update_time>create_time and update_time < '{}';'''.format(end_date)
         result = self.connect.query(self.connect.coupons, sql_xg)
         for res in result:
             sql_xg = sql_coupons_num.format(start_date, res[3])
@@ -342,7 +342,8 @@ class Export:
             all_data2.append([res[0].strftime("%y%m%d"), res[1], dict_id2name[res[2]],
                               self.connect.cou_cfg_id2label(res[3]),get_num, get_num2, res[4].strftime("%y%m%d")])
         #下线
-        sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config where status=3;'''
+        sql_xx = '''select publish_end_date, name, merchant_id, coupons_config_id from coupons_config where status=3
+        and create_time is not null;'''
         result = self.connect.query(self.connect.coupons, sql_xx)
         for res in result:
             sql_xx = sql_coupons_num.format(start_date, res[3])
@@ -354,12 +355,12 @@ class Export:
 
         all_data = [all_data1, all_data2, all_data3];   all_df = []
         file = ['快到期券详情', '修改券详情', '下线券详情']
-        # i = 0
+        i = 0
         for d in all_data:
             df = pd.DataFrame(d, columns=columns)
             all_df.append(df)
-            # df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
-            # i += 1
+            df.to_csv(os.path.join(dir_name, file[i]), index=False, encoding='gbk', sep=',')
+            i += 1
         return all_df, file
 
 def main():
@@ -368,7 +369,7 @@ def main():
     # opt = {'MERCHANT_TYPE':1}
     # export.shyq('2018-6-20','2018-7-21','./', opt={})
     # export.qpm('2018-7-1','2018-7-21','./')
-    export.ydqxq('2018-8-1', '2018-9-1', './')
+    export.ydqxq('2018-6-6', '2018-6-7', './')
 
 if __name__ == '__main__':
     main()
