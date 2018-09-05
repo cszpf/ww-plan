@@ -395,7 +395,7 @@ class Export:
         else:
             data_qqd.append('-')
         # print(data_qqd)
-        result_label = ();result = ();result3=();result_label2=();result_label4=();result_label6=();result_label3=()
+        result_label = ();result = ();result3=();result_label2=();result_label4=();result_label6=();result_label3=();result8=()
         if opt:
             for all_sub in result1:
                 if all_sub:
@@ -407,9 +407,14 @@ class Export:
                     result1 = self.connect.query(self.connect.coupons, sql1)
                     result = result + result1
                     #下线、修改券
-                    sql3 = """SELECT update_time,status
+                    sql8 = """SELECT create_time
                          From coupons_config
-                         WHERE create_time<update_time AND b.subbranch_id='{}'""".format(all_sub[0])
+                         WHERE status=3 AND create_time IS NOT NULL AND subbranch_id='{}'""".format(all_sub[0])
+                    result88 = self.connect.query(self.connect.coupons, sql8)
+                    result8=result8+result88
+                    sql3 = """SELECT create_time,update_time,expire_date
+                         From coupons_config
+                         WHERE create_time<update_time AND create_time IS NOT NULL AND subbranch_id='{}'""".format(all_sub[0])
                     result33 = self.connect.query(self.connect.coupons, sql3)
                     result3=result3+result33
                     #带标签的券
@@ -446,7 +451,7 @@ class Export:
                     WHERE  b.coupons_config_id IN (SELECT DISTINCT coupons_config_id
                     From coupons_cfg_label_rela
                     WHERE label_id=145560 OR label_id=145561 OR label_id=145562 OR label_id=145562 OR label_id=145563 OR label_id=458756) 
-                    AND a.subbranch_id='{}'""".format(all_sub[0])
+                    AND b.subbranch_id='{}'""".format(all_sub[0])
                     result_label33 = self.connect.query(self.connect.coupons, sql7)
                     result_label3 = result_label3 + result_label33
         else:
@@ -454,10 +459,15 @@ class Export:
                 FROM coupons a,coupons_config b
                 WHERE a.coupons_config_id=b.coupons_config_id"""
             result= self.connect.query(self.connect.coupons, sql1)
-            sql3 = """SELECT create_time,update_time,status
+            sql8 = """SELECT create_time
                  From coupons_config
-                 WHERE create_time<update_time """
+                 WHERE status=3 AND create_time IS NOT NULL """
+            result8 = self.connect.query(self.connect.coupons, sql8)
+            sql3 = """SELECT create_time,update_time,expire_date
+                 From coupons_config
+                 WHERE create_time<update_time AND create_time IS NOT NULL  """
             result3 = self.connect.query(self.connect.coupons, sql3)
+            #print(len(result8))
             sql2 = """SELECT coupons_id,a.status,a.expire_date,a.create_time,b.status,update_time,label_name,b.create_time,coupons_promote_id
             FROM coupons a,coupons_config b,coupons_cfg_label_rela c,labels d
             WHERE a.coupons_config_id=b.coupons_config_id AND a.coupons_config_id=c.coupons_config_id AND c.label_id=d.label_id """
@@ -482,7 +492,7 @@ class Export:
                                 From coupons_cfg_label_rela
                                 WHERE label_id=145560 OR label_id=145561 OR label_id=145562 OR label_id=145562 OR label_id=145563 OR label_id=458756) """
             result_label3 = self.connect.query(self.connect.coupons, sql7)
-        # print(result_label)
+        #print(result)
         # print(len(result_label))
         #领券数
         _data = []
@@ -589,14 +599,18 @@ class Export:
                         count_used+=1
                     if _sub[1]==2:
                         count_out_time+=1
-                    if _sub[2]-datetime.timedelta(10)<x and _sub[2]>x:
-                        count_expire+=1
+
 
             for _sub in result3:
                 if _sub[0].date() <= x:
                     if _sub[1].date()<=x:
                         count_modify+=1
-                    if _sub[2]==3:
+                    if _sub[2] :
+                        if _sub[2] - datetime.timedelta(10) == x:
+                            count_expire += 1
+
+            for _sub in result8:
+                if _sub[0].date() <= x:
                         count_downline += 1
 
             for _sub in result_label:
@@ -738,9 +752,11 @@ def main():
     opt = {
     'ADMIN_REGION_CODE':'2100'
     }
-    opt={}
+    opt={
+        'MICRO_REGION_CODE':'2104'
+    }
 
     #print(export.khhz('2018-6-5','2018-6-7','./', opt)[0])
-    print(export.qhz('2018-8-22', '2018-8-24', './', opt)[0])
+    print(export.qhz('2018-8-16', '2018-8-17', './', opt)[0])
 if __name__ == '__main__':
     main()
