@@ -40,8 +40,10 @@ class Export:
                     FROM subbranch a,merchant b, merchant_industry c 
                     WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type and a.sub_type=1 and a.state=2"""
         if opt:
-            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() if i not in ('MERCHANT_ID','MERCHANT_TYPE')]
-            _temp.extend(["b.{}='{}'".format(i,j) for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
             sql1 += ' AND ' + ' AND '.join(_temp)
         sql1result = self.connect.query(self.connect.fenqi, sql1)
 
@@ -369,7 +371,8 @@ class Export:
 def main():
     export = Export()
     opt = {
-        #'SUBBRANCH_ID': 'yifanmeirongTest20180223'
+        'ADMIN_REGION_CODE':'2100'
+        #'SUBBRANCH_ID': '00yfmeirongzhengjiadian90m8op'
         #'MERCHANT_ID': 'ed3325d31cea4333b62b76eafeb426e5'
     }
     #export.mdlszb('2018-6-1', '2018-6-3', r'\Users\qiqi\Desktop')
