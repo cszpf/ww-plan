@@ -1,14 +1,15 @@
 <template>
-  <div id="storeRanking">
+  <div id="expiredCoupons">
+    <div class="activeStores-title"><span>快到期券(还有10天到期))</span></div>
     <el-form label-width="80px" class="screen">
       <el-form-item label="日期 :">
         <el-date-picker :clearable="clearablebl" :picker-options="pickerOptions0" v-model="date" type="daterange" placeholder="选择日期" size="small" value-format="yyyy-MM-dd" format="yyyy-MM-dd" @change="dateData">
         </el-date-picker>
-        <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button>
+        <!-- <el-button class="guidetable" type="success" size="small" @click="gotoData">导表</el-button> -->
       </el-form-item>
     </el-form>
     <div class="stroetop" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
-      <div :class="[item._boeder == 2?'td-border':'','stroetop-table']" v-for="(item, index) in dataList" :key="index">
+      <div class="stroetop-table" v-for="(item, index) in dataList" :key="index">
         <div class="stroetop-td stroetop-boeder">{{item._key}}</div>
         <div class="stroetop-td" v-for="(items, indexs) in item._data" :key="indexs">{{items}}</div>
       </div>
@@ -18,7 +19,7 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'pageView',
+  name: 'expiredCoupons',
   data () {
     return {
       clearablebl: false,
@@ -58,7 +59,7 @@ export default {
         ]
       },
       postData: {
-        ids: sessionStorage.getItem('id'),
+        ids: 'kdqq',
         opt: {
           'ADMIN_REGION_CODE': '', // 行政区
           'MICRO_REGION_CODE': '', // 微区域
@@ -72,11 +73,8 @@ export default {
         page: 0,
         columns: 10
       },
-      dataList: [],
-      tableList: false,
-      page: 0,
-      pageright: true,
-      loading: true
+      loading: true,
+      dataList: []
     }
   },
   created () {
@@ -85,8 +83,6 @@ export default {
     this.date.push(this.formatDate(lastMonth), this.formatDate(today))
     console.log(this.date)
     this.postData.date = this.date
-  },
-  mounted () {
     this.loadData()
   },
   methods: {
@@ -123,7 +119,6 @@ export default {
     },
     loadData () {
       this.loading = true
-      this.page = 0
       this.dataList = []
       axios({method: 'post', url: this.$store.state.url + '/api/table_export', data: this.postData})
         .then(response => {
@@ -132,31 +127,8 @@ export default {
           }
           console.log(response)
           console.log(response.data)
-          // this.shopList = response.data.splice(0, 1)
-          // console.log(this.shopList)
+          response.data.splice(0, 1)
           this.dataList = response.data
-          this.dataList.forEach((item, index) => {
-            item['_boeder'] = 1
-            if (index === 0) {
-              item['_boeder'] = 2
-            }
-            if (index === 2) {
-              item['_boeder'] = 2
-            }
-            if (index === 4) {
-              item['_boeder'] = 2
-            }
-            if (index === 7) {
-              item['_boeder'] = 2
-            }
-            if (index === 9) {
-              item['_boeder'] = 2
-            }
-            console.log(item)
-          })
-          // console.log(this.dataList)
-          // this.dataPageList = response.data.slice(this.page * 10, 10)
-          // console.log(this.dataPageList)
         })
         .catch(function (error) {
           console.log(error)
@@ -166,12 +138,16 @@ export default {
 }
 </script>
 <style scoped>
-#storeRanking {
-  margin-top: 15px;
-  padding-right: 0;
+.activeStores-title {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding-left: 35px;
+}
+#expiredCoupons {
   font-size: 14px;
-  width: 100%;
   height: 100vh;
+  width: 100%;
+  padding:15px;
 }
 .stroetop {
   width: 100%;
@@ -185,11 +161,11 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 10%;
-  min-width: 90px;
+  width: 17%;
+  min-width: 140px;
 }
 .stroetop-td {
-  height: 40px;
+  /* height: 40px; */
   /* line-height: 40px; */
   /* min-width: 80px; */
   width: 100%;
@@ -199,6 +175,7 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  padding: 10px;
 }
 .td-border {
   border-right: 1px solid #dddddd
@@ -208,6 +185,6 @@ export default {
 }
 .guidetable {
   float: right;
-  margin-right: 25px;
+  margin-right: 50px;
 }
 </style>

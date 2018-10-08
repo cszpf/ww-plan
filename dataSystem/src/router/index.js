@@ -26,6 +26,70 @@ export default new Router({
       },
       component: resolve => require(['@/views/passwd'], resolve)
     },
+    // 导表页面
+    {
+      path: '/tableList',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/tableList'], resolve)
+    },
+    // 活跃门店数量
+    {
+      path: '/activeStores',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/activeStores'], resolve)
+    },
+    // 沉默门店数量
+    {
+      path: '/silenceStores',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/silenceStores'], resolve)
+    },
+    // 异动商户流失数量
+    {
+      path: '/businessesLost',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/businessesLost'], resolve)
+    },
+    // 流失商户数量
+    {
+      path: '/lossMerchants',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/lossMerchants'], resolve)
+    },
+    // 下线券
+    {
+      path: '/referralsTicket',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/referralsTicket'], resolve)
+    },
+    // 修改券
+    {
+      path: '/amendTicket',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/amendTicket'], resolve)
+    },
+    // 快到期券
+    {
+      path: '/expiredCoupons',
+      meta: {
+        requireAuth: true
+      },
+      component: resolve => require(['@/views/expiredCoupons'], resolve)
+    },
     // 主页
     {
       path: '/index',
@@ -73,6 +137,16 @@ export default new Router({
         {
           path: '/storeRanking',
           component: resolve => require(['@/views/storeRanking'], resolve)
+        },
+        // 券排行
+        {
+          path: '/topCoupons',
+          component: resolve => require(['@/views/topCoupons'], resolve)
+        },
+        // 点击量
+        {
+          path: '/pageView',
+          component: resolve => require(['@/views/pageView'], resolve)
         }
       ]
     }

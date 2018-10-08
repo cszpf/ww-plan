@@ -30,27 +30,24 @@ export default {
   },
   methods: {
     submitForm () {
-      let _this = this
-      console.log(this.form.username)
-      console.log(this.form.password)
-      console.log({username:this.form.username,password:this.form.password})
-      const path = 'http://localhost:5000/api/signin'
-      axios.post(path, {username:this.form.username,password:this.form.password})
-      .then(function(response){
-        if(response.data.status=='ok'){
-          _this.$router.push({path: '/storesSummary'})
-        }
-        else{
-          _this.$message.error(response.data.status)
-        }
-        console.log(response);
-      })
-      .catch(function(error){
-        console.log(error);
-      })
+      const path = this.$store.state.url + '/api/signin'
+      axios.post(path, {username: this.form.username, password: this.form.password})
+        .then(response => {
+          if (response.data.status === 'ok') {
+            sessionStorage.setItem('username', response.data.username)
+            sessionStorage.setItem('id', 'mdhz')
+            this.$store.commit('increment', true)
+            this.$router.push({path: '/tableList'})
+          } else {
+            this.form.password = ''
+            this.$message.error(response.data.status)
+          }
+        })
+        .catch(function (error) {
+          console.log(error)
+        })
     }
   }
-
 }
 </script>
 

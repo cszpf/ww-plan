@@ -1,4 +1,5 @@
 #encoding=utf-8
+from flask import jsonify
 import MySQLdb
 import datetime
 import os
@@ -47,7 +48,7 @@ class Export:
         self.connect = Connect()
 
     # 实现门店流水表的在线生成
-    def mdls(self, start_date, end_date, dir_name):
+    def mdls(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放门店流水表的目标文件夹
@@ -61,12 +62,19 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL """
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql1 += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
                 data = []; data1 = {}; _data = []; _sub=list(_sub)
-                _sub[3] = self.connect.region_code2name(_sub[3]);_sub[4] = self.connect.region_code2name(_sub[4])
+                _sub[3] = self.connect.region_code2name(_sub[3])
+                _sub[4] = self.connect.region_code2name(_sub[4])
                 _data.extend([_sub[i] for i in range(1,9)])
                 sql1 = """SELECT sum(amount),create_time FROM wechat_pay_log 
                 WHERE subbranch_id='{}' AND type IN (2,3) AND state=2 GROUP BY create_time 
@@ -92,6 +100,9 @@ class Export:
                 else:#没有消费记录
                     ifactive = False; ifsilent = True if (end_date - ddtgrq).days >= 15 else False
                 _data.extend([ifactive, ifsilent])
+                if 'SUBBRANCH_PROP' in opt.keys():
+                    if (opt['SUBBRANCH_PROP'] == 'active' and not ifactive) or (opt['SUBBRANCH_PROP'] == 'silent' and not ifsilent):
+                        continue
                 for i in range((end_date-start_date).days):
                     x = start_date + datetime.timedelta(i)
                     _data.append(data1.get(x,0))
@@ -101,7 +112,7 @@ class Export:
         return df, '门店流水'
 
     # 实现门店流水占比表的在线生成
-    def mdlszb(self, start_date, end_date, dir_name):
+    def mdlszb(self, start_date, end_date, dir_name, opt={}):
         # start_date:形如"2018-xx-xx"的str
         # end_date:形如"2018-xx-xx"的str
         # dir_name:存放门店流水表的目标文件夹
@@ -115,7 +126,13 @@ class Export:
         sql1 = """SELECT subbranch_id,subbranch_name,short_name,ADMIN_REGION_CODE,MICRO_REGION_CODE,
         merchant_type_name,SALE_NAME, OPERATOR_NAME,a.create_time,AVERAGE_ASSESS_INCOME 
         FROM subbranch a,merchant b, merchant_industry c 
-        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time!='' """
+        WHERE a.merchant_id=b.merchant_id AND b.merchant_type = c.merchant_type AND a.create_time IS NOT NULL """
+        if opt:
+            _temp = ["{}='{}'".format(i,j) for i,j in opt.items() \
+            if i not in ('MERCHANT_ID','MERCHANT_TYPE','SUBBRANCH_PROP')]
+            _temp.extend(["b.{}='{}'".format(i,j) \
+                for i,j in opt.items() if i in ('MERCHANT_ID','MERCHANT_TYPE')])
+            sql1 += ' AND ' + ' AND '.join(_temp)
         result = self.connect.query(self.connect.fenqi, sql1)
         for _sub in result:
             if _sub:
@@ -141,14 +158,16 @@ class Export:
                         data1.update({__.date():data1.get(__.date(),0)+_})
                     del(data)
                     max_date = max(data1.keys())
-                    print(data1.keys())
                     len_date = len([_ for _ in data1.keys() if (end_date - _).days<=30 and (end_date - _).days>0])
-                    print(len_date)
+                    # print(len_date)
                     ifactive = True if len_date >= (16 if (end_date-ddtgrq).days >= 30 else (end_date-ddtgrq).days//2 + 1) else False
                     ifsilent = True if (end_date - max_date).days >= 15 else False
                 else:#没有消费记录
                     ifactive = False; ifsilent = True if (end_date - ddtgrq).days >= 15 else False
                 _data.extend([ifactive, ifsilent])
+                if 'SUBBRANCH_PROP' in opt.keys():
+                    if (opt['SUBBRANCH_PROP'] == 'active' and not ifactive) or (opt['SUBBRANCH_PROP'] == 'silent' and not ifsilent):
+                        continue
                 for i in range((end_date-start_date).days):
                     x = start_date + datetime.timedelta(i)
                     try:
@@ -162,23 +181,24 @@ class Export:
         df = concat(df, 10)
         return df, '门店流水占比'
     
-    def shyq(self, start_date, end_date, dir_name):
+    def shyq(self, start_date, end_date, dir_name, opt={}):
         yj_Export = yj.Export()
-        return yj_Export.shyq(start_date, end_date, dir_name)
+        _df, _name = yj_Export.shyq(start_date, end_date, dir_name)
+        return _df, _name
 
-    def qpm(self, start_date, end_date, dir_name):
+    def qpm(self, start_date, end_date, dir_name, opt={}):
         yj_Export = yj.Export()
         return yj_Export.qpm(start_date, end_date, dir_name)
 
-    def mdhz(self, start_date, end_date, dir_name):
+    def mdhz(self, start_date, end_date, dir_name, opt={}):
         lz_EXport = lz.Export()
         return lz_EXport.mdhz(start_date, end_date, dir_name)
 
-    def khhz(self, start_date, end_date, dir_name):
+    def khhz(self, start_date, end_date, dir_name, opt={}):
         lcs_export = lcs.Export()
         return lcs_export.khhz(start_date, end_date, dir_name)
     
-    def qhz(self, start_date, end_date, dir_name):
+    def qhz(self, start_date, end_date, dir_name, opt={}):
         lcs_export = lcs.Export()
         yj_export = yj.Export()
         df, names = [], []
@@ -188,30 +208,39 @@ class Export:
         df.extend(ydqxq[0]); names.extend(ydqxq[1])
         return df, names
 
-    def mdpm(self, start_date, end_date, dir_name):
+    def mdpm(self, start_date, end_date, dir_name, opt={}):
         qq_export = qq.Export()
         return qq_export.mdpm(start_date, end_date, dir_name)
 
-    def shqxq(self, start_date, end_date, dir_name):
+    def shqxq(self, start_date, end_date, dir_name, opt={}):
         qq_export = qq.Export()
         return qq_export.shqxq(start_date,end_date,dir_name)
 
-    def djl(self, start_date, end_date, dir_name):
+    def djl(self, start_date, end_date, dir_name, opt={}):
         path = '../static/click'
         if not os.path.exists(path):
             path = './static/click'
         df1 = pd.read_csv(os.path.join(path,'click.csv'), encoding='gbk')
-        if end_date > df1.columns[-1]:
-            df2 = click.preDate(df1.columns[-1],end_date).drop(df1.columns[-1],axis=1)
-            df1 = pd.merge(df1,df2,on='受访页面',how='outer', copy=False).fillna(0)
+        last_day = datetime.datetime.strptime(df1.columns[-1],'%Y-%m-%d')
+        end_day = datetime.datetime.strptime(end_date,'%Y-%m-%d')
+        if (end_day - last_day).days > 1:
+            df2 = click.preDate(df1.columns[-1], end_date)
+            df1 = pd.merge(df1.drop(df1.columns[-1], axis=1), df2, on='受访页面', how='outer', copy=False).fillna(0)
+            # os.remove(os.path.join(path, 'click.csv'))
             click.write_csv(df1, path)
         option = ['受访页面']
-        option.extend(df1.columns[1:][[i<=end_date and i>=start_date for i in df1.columns[1:]]])
+        option.extend(df1.columns[1:][[i<end_date and i>=start_date for i in df1.columns[1:]]])
         return df1[option], '点击量'
 
 def main():
     export = Export()
-    export.mdlszb('2018-6-1','2018-6-3','./')
+    # opt = {
+    # 'SUBBRANCH_ID':'91dc20c9adac4035a4c1b7964792b043',
+    # 'SUBBRANCH_PROP':'active'
+    # }
+    # print(export.mdls('2018-6-1','2018-6-3','./', {})[0].to_dict())
+    export.shyq('2018-6-1','2018-6-3','./')
+    # print(jsonify(export.mdlszb('2018-6-1','2018-6-3','./', {})[0].to_json()))
 
 if __name__ == '__main__':
     main()

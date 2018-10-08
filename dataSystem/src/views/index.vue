@@ -5,9 +5,9 @@
            <el-col class="navTop" :span="24">
                <p class="title-content">运营统计系统</p>
                <div class="offDiv">
-                 <span class="titie-span">您好,小米</span>
+                 <span class="titie-span">您好,{{username}}</span>
                  <el-button size="small" type="warning"  @click="passwd" class="operating">修改密码</el-button>
-                 <el-button size="small" type="warning" class="operating">退出登录</el-button>
+                 <el-button size="small" type="warning" class="operating" @click="logOff">退出登录</el-button>
                </div>
            </el-col>
        </el-row>
@@ -21,7 +21,7 @@
          </el-col>
        </el-row>
       </div>
-      <el-card class="contentView">
+      <el-card class="contentView"  v-loading="loading"    element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading" element-loading-background="rgba(250, 250, 250, 1)">
         <router-view></router-view>
       </el-card>
     </div>
@@ -50,12 +50,12 @@ export default {
           parentMenuId: '3'
         },
         {
-          name: '商品用劵',
+          name: '商户用劵',
           url: '/commodityCoupons',
           parentMenuId: '4'
         },
         {
-          name: '商户用劵详情',
+          name: '商户劵详情',
           url: '/commodityCouponsDetails',
           parentMenuId: '5'
         },
@@ -70,29 +70,116 @@ export default {
           parentMenuId: '7'
         },
         {
-          name: '门店排行',
+          name: '门店排名',
           url: '/storeRanking',
           parentMenuId: '8'
         },
         {
           name: '劵排名',
-          url: '/storeRanking',
+          url: '/topCoupons',
           parentMenuId: '9'
         },
         {
           name: '点击量',
-          url: '/storesSummary',
-          parentMenuId: '9'
+          url: '/pageView',
+          parentMenuId: '10'
         }
-      ]
+      ],
+      username: '',
+      loading: true
     }
   },
+  created () {
+    this.username = sessionStorage.getItem('username')
+    this.loadingTime()
+  },
   methods: {
+    loadingTime () {
+      setTimeout(() => {
+        this.loading = false
+      }, 1500)
+    },
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
+      if (key === '/storesSummary') { // 门店汇总
+        sessionStorage.setItem('id', 'mdhz')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/securitiesSummary') { // 券汇总
+        sessionStorage.setItem('id', 'qhz')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/customerSummary') { // 客户汇总
+        sessionStorage.setItem('id', 'khhz')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/commodityCoupons') { // 商户用券
+        sessionStorage.setItem('id', 'shyq')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/commodityCouponsDetails') { // 商户券详情
+        sessionStorage.setItem('id', 'shqxq')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/storesBill') { // 门店流水
+        sessionStorage.setItem('id', 'mdls')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/storeBillRatio') { // 门店流水占比
+        sessionStorage.setItem('id', 'mdlszb')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/storeRanking') { // 门店排名
+        sessionStorage.setItem('id', 'mdpm')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/topCoupons') { // 券排名
+        sessionStorage.setItem('id', 'qpm')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
+      if (key === '/pageView') { // 点击量
+        sessionStorage.setItem('id', 'djl')
+        this.$store.commit('increment', true)
+        // this.loading = true
+        // this.loadingTime()
+      }
     },
     passwd () {
       this.$router.push({path: '/passwd'})
+    },
+    logOff () {
+      this.$confirm('此操作将退出登录, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '操作成功!'
+        })
+        sessionStorage.removeItem('username')
+        sessionStorage.removeItem('id')
+        this.$store.commit('increment', true)
+        this.$router.push({path: '/login'})
+      }).catch(() => {})
     }
   }
 }
