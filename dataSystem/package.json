@@ -16,7 +16,7 @@
     "axios": "^0.18.0",
     "element-ui": "^2.4.5",
     "growl": "^1.10.5",
-    "https-proxy-agent": "^2.2.1",
+    "https-proxy-agent": "^2.2.3",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },
